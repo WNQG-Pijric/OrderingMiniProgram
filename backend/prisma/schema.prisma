@@ -1,0 +1,211 @@
+// 微信点餐小程序 - 数据库 Schema
+// 模块 00：一次性定义全部表，migrate 落地后开始业务模块开发。
+// 字段对齐 docs/README.md「六、数据库设计」，不得增删改字段。
+// 命名约定：Prisma 字段 camelCase，数据库列 snake_case（@map）；表名 @@map。
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ============ 枚举 ============
+
+// 用户角色（预留）
+enum UserRole {
+  USER // 普通用户
+  ADMIN // 预留
+}
+
+// 订单状态机：待支付 → 已支付 → 制作中 → 已完成 / 已取消
+enum OrderStatus {
+  PENDING_PAYMENT // 待支付
+  PAID // 已支付
+  MAKING // 制作中
+  COMPLETED // 已完成
+  CANCELED // 已取消
+}
+
+// 支付方式（当前仅余额）
+enum PayType {
+  balance
+}
+
+// 钱包流水类型
+enum WalletLogType {
+  pay // 消费
+  gift // 赠送
+  refund // 退款
+}
+
+// ============ 1. 管理员 ============
+model Admin {
+  id        Int      @id @default(autoincrement())
+  username  String   @unique // 登录名
+  password  String // bcrypt 哈希
+  nickname  String?
+  status    Int      @default(1) // 0禁用 1正常
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("admin")
+}
+
+// ============ 2. 用户 ============
+model User {
+  id        Int       @id @default(autoincrement())
+  openid    String    @unique
+  nickname  String?
+  avatar    String?
+  role      UserRole  @default(USER)
+  balance   Decimal   @default(0) @db.Decimal(10, 2)
+  status    Int       @default(1) // 0禁用 1正常
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at") // 软删除
+
+  orders     Order[]
+  walletLogs WalletLog[]
+
+  @@map("user")
+}
+
+// ============ 3. 菜品分类 ============
+model MenuCategory {
+  id        Int      @id @default(autoincrement())
+  name      String
+  sort      Int      @default(0)
+  status    Int      @default(1) // 0停用 1启用
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  menus Menu[]
+
+  @@map("menu_category")
+}
+
+// ============ 4. 菜品 ============
+model Menu {
+  id          Int      @id @default(autoincrement())
+  categoryId  Int      @map("category_id")
+  name        String
+  description String?
+  image       String? // COS 图片 URL
+  price       Decimal  @db.Decimal(10, 2) // 基础价
+  sales       Int      @default(0) // 销量（热销统计）
+  stock       Int      @default(0) // 库存
+  status      Int      @default(1) // 0下架 1上架
+  isSpec      Boolean  @default(false) @map("is_spec") // 是否有规格
+  sort        Int      @default(0)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at") // 软删除
+
+  category    MenuCategory    @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  specGroups  MenuSpecGroup[]
+  // order_item.menu_id 为快照冗余，不建强外键（防菜品删除影响历史订单），故无反向关系
+
+  @@index([categoryId])
+  @@index([status])
+  @@map("menu")
+}
+
+// ============ 5. 规格组（甜度/温度/加料） ============
+model MenuSpecGroup {
+  id        Int      @id @default(autoincrement())
+  menuId    Int      @map("menu_id")
+  name      String // 如：甜度、温度、加料
+  sort      Int      @default(0)
+  status    Int      @default(1) // 0停用 1启用
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  menu  Menu           @relation(fields: [menuId], references: [id], onDelete: Restrict)
+  items MenuSpecItem[]
+
+  @@index([menuId])
+  @@map("menu_spec_group")
+}
+
+// ============ 6. 规格项（全糖/半糖/加珍珠） ============
+model MenuSpecItem {
+  id         Int      @id @default(autoincrement())
+  groupId    Int      @map("group_id")
+  name       String // 如：全糖、半糖、加珍珠
+  priceDelta Decimal  @default(0) @db.Decimal(10, 2) @map("price_delta") // 加价
+  sort       Int      @default(0)
+  status     Int      @default(1) // 0停用 1启用
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  group MenuSpecGroup @relation(fields: [groupId], references: [id], onDelete: Restrict)
+
+  @@index([groupId])
+  @@map("menu_spec_item")
+}
+
+// ============ 7. 订单 ============
+model Order {
+  id            Int         @id @default(autoincrement())
+  orderNo       String      @unique @map("order_no")
+  userId        Int         @map("user_id")
+  amount        Decimal     @db.Decimal(10, 2) // 实付金额（服务端重算）
+  totalAmount   Decimal     @db.Decimal(10, 2) @map("total_amount") // 原价（含规格加价）
+  remark        String?     @db.VarChar(100) // 备注 ≤100 字
+  clientOrderNo String      @unique @map("client_order_no") // 客户端幂等键
+  status        OrderStatus @default(PENDING_PAYMENT)
+  payType       PayType?    @map("pay_type")
+  payTime       DateTime?   @map("pay_time")
+  cancelTime    DateTime?   @map("cancel_time")
+  refundTime    DateTime?   @map("refund_time")
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+
+  user       User        @relation(fields: [userId], references: [id], onDelete: Restrict)
+  items      OrderItem[]
+  walletLogs WalletLog[]
+
+  @@index([userId])
+  @@index([status])
+  @@map("order")
+}
+
+// ============ 8. 订单项（快照，append-only 仅 created_at） ============
+model OrderItem {
+  id        Int      @id @default(autoincrement())
+  orderId   Int      @map("order_id")
+  menuId    Int      @map("menu_id") // 菜品 ID 快照（不设强外键，防菜品删除影响历史）
+  menuName  String   @map("menu_name") // 菜品名快照
+  specText  String?  @map("spec_text") // 规格文本快照（如：半糖/少冰/加珍珠）
+  count     Int
+  price     Decimal  @db.Decimal(10, 2) // 下单单价快照
+  total     Decimal  @db.Decimal(10, 2) // 小计
+  createdAt DateTime @default(now()) @map("created_at")
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@map("order_item")
+}
+
+// ============ 9. 钱包流水（append-only 仅 created_at） ============
+model WalletLog {
+  id           Int            @id @default(autoincrement())
+  userId       Int            @map("user_id")
+  orderId      Int?           @map("order_id") // 关联订单（可空，如 gift）
+  change       Decimal        @db.Decimal(10, 2) // 变动额（正/负）
+  balanceAfter Decimal        @db.Decimal(10, 2) @map("balance_after") // 变动后余额快照
+  type         WalletLogType
+  remark       String?
+  createdAt    DateTime       @default(now()) @map("created_at")
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Restrict)
+  order Order? @relation(fields: [orderId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([orderId])
+  @@map("wallet_log")
+}
