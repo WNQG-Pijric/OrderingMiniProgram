@@ -246,7 +246,7 @@ restaurant-system/
 
 # 六、数据库设计
 
-> 统一约定：所有表使用 `utf8mb4`；含 `created_at` / `updated_at`；核心表含软删除 `deleted_at`。
+> 统一约定：所有表使用 `utf8mb4`；业务表含 `created_at` / `updated_at`；核心表含软删除 `deleted_at`。例外：`order_item`（订单快照）、`wallet_log`（流水，追加写不可修改）仅含 `created_at`。
 
 ## admin
 
@@ -589,6 +589,12 @@ GET    /menu/:id                 # 含规格信息
 # v2（预留）：POST /cart/items、PUT /cart/items/:id、DELETE /cart/items/:id、GET /cart
 ```
 
+### Notify
+
+```
+POST   /notify/send             # 触发订阅消息（按事件分发，内部调用）
+```
+
 ### Order
 
 ```
@@ -608,6 +614,7 @@ GET    /admin/users
 POST   /admin/users/:id/recharge # 管理员赠送余额
 POST   /admin/users/:id/disable  # 禁用用户
 GET    /admin/stats
+GET    /admin/cos/sts            # 获取 COS 临时密钥（图片直传）
 POST   /admin/menu
 PUT    /admin/menu/:id
 DELETE /admin/menu/:id
