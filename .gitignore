@@ -1,0 +1,16 @@
+# Windows
+Thumbs.db
+Desktop.ini
+
+# macOS
+.DS_Store
+
+# PowerShell
+*.log
+
+# IDE
+.vscode/
+.idea/
+
+# 工具生成的 skill 副本 (npx skills update 产物)
+.agents/
