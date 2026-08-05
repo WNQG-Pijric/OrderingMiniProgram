@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { inspect } from 'node:util';
 import { BizException } from '../common/exceptions/biz.exception';
 import { ErrorCode } from '../common/errors';
 
@@ -38,8 +39,9 @@ export class WechatService {
       const resp = await fetch(url, { signal: AbortSignal.timeout(10_000) });
       data = (await resp.json()) as typeof data;
     } catch (err) {
+      // 完整打印错误对象（含 cause 链），便于云托管日志定位 DNS/连接/证书问题
       this.logger.error(
-        `code2Session 网络异常：${(err as Error).message}`,
+        `code2Session 网络异常：${inspect(err, { depth: 5 })}`,
         (err as Error).stack,
       );
       throw new BizException(ErrorCode.WECHAT_API_ERROR, '微信服务调用失败');
