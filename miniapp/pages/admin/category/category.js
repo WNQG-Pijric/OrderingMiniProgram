@@ -8,6 +8,7 @@ Page({
     // 弹层表单
     showForm: false,
     form: { id: null, name: '', sort: 0 },
+    saving: false, // 保存中防重复提交
   },
 
   onShow() {
@@ -54,6 +55,7 @@ Page({
   },
 
   onFormSave() {
+    if (this.data.saving) return; // 防重复提交
     const { id, name, sort } = this.data.form;
     if (!name || !name.trim()) {
       wx.showToast({ title: '请输入分类名称', icon: 'none' });
@@ -65,14 +67,18 @@ Page({
       return;
     }
     const payload = { name: name.trim(), sort: Number(sort) || 0 };
+    this.setData({ saving: true });
     const p = id
       ? request({ url: `/admin/category/${id}`, method: 'PUT', data: payload })
       : request({ url: '/admin/category', method: 'POST', data: payload });
     p.then(() => {
+      this.setData({ saving: false, showForm: false });
       wx.showToast({ title: '保存成功', icon: 'success' });
-      this.setData({ showForm: false });
       this.load();
-    }).catch((err) => wx.showToast({ title: err.message, icon: 'none' }));
+    }).catch((err) => {
+      this.setData({ saving: false });
+      wx.showToast({ title: err.message, icon: 'none' });
+    });
   },
 
   /** 启停切换（停用 = 删除的等效表达，数据保留） */

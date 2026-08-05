@@ -295,6 +295,18 @@ Claude 的四个 P0/P1 根因定位方向正确，A → C → B 的实施顺序�
 
 新增真机验证项：① 购物车首次进入过期标记立即显示且结算被阻止；② 首页角标 `calc()` + CSS 变量渲染（基础库版本支持）；③ 管理端编辑「删除图片」后保存图片真正清除。
 
+### 10.2 Codex 复审（2026-08-06）：1 个必修 + 2 个建议，已修复并验证
+
+codex 对 10.1 复审给出 **P1 必修 + P2/P3 建议**，全部核对属实并修复：
+
+**P1（必修）首页「全部」tab 同源 bug**（与 B1 同根因）：`index.wxml` 的「全部」是静态 `data-id="0"`，dataset 拿到字符串 `"0"`；`onCategoryTap` 直接用原始值 → `activeCategoryId` 变字符串 `"0"`，`=== 0` 选中态恒 false；`loadMenus` 里 `categoryId ? {...} : {}` 把字符串 `"0"` 当 truthy 发送 `categoryId=0` → 后端按分类 0 过滤 → 空列表。修复：`onCategoryTap` 统一 `Number()`，`loadMenus` 改为 `categoryId > 0 ? { categoryId } : {}`。
+
+**P2（建议）购物车过期校验只在进入时跑一次**：改数量后不重新校验、加号不按库存封顶、校验异步完成前可点结算绕过。修复：`validateItems` 拆分出 `checkItem`（单条校验，返回 `{key, stale, stock}`），新增 `stockMap`（库存快照，加号触顶）、`revalidateItem`（数量变更后重查单条，可解除「库存不足」）、`startValidate/endValidate`（计数式 `validating`，并发校验全部结束后才放行结算）；`onCheckout` 校验中拦截；wxml 加号 `item.count >= item.maxCount || item.stale` 禁用态。
+
+**P3（建议）分类保存无防重复提交**：`category.js` 补 `saving` 状态（校验后置位、成功/失败复位），wxml 保存按钮 `loading/disabled` + 「保存中...」。
+
+**验证（Node 模拟，16 项断言全过）**：P1 字符串 "0"/"2"/数字 3 三种 dataset → 选中态、幂等、请求参数全正确；P2 四场景（结算窗口拦截、加号触顶、减量解除标记、已下架拦截、网络失败不阻塞）+ validating 计数复位；P3 连点仅 1 请求、成功关弹层、失败复位。三个 JS 文件 `node --check` 通过；后端未改动。
+
 ### 9.3 验收标准（合并原 7 条 + 评审 6 条）
 
 1. 管理端：点【全部】正常展示全部菜品、请求参数无 `status=undefined`、无循环报错；筛选切换有选中态；switch 上下架状态与 toast 文案一致（真机）

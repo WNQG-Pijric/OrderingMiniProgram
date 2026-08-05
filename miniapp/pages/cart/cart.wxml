@@ -35,7 +35,11 @@
                 bindtap="onMinus"
               >-</view>
               <text class="stepper__num">{{item.count}}</text>
-              <view class="stepper__btn" data-key="{{item.key}}" bindtap="onPlus">+</view>
+              <view
+                class="stepper__btn {{item.count >= item.maxCount || item.stale ? 'stepper__btn--disabled' : ''}}"
+                data-key="{{item.key}}"
+                bindtap="onPlus"
+              >+</view>
             </view>
           </view>
           <view class="cart-item__actions">

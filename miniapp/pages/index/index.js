@@ -48,7 +48,8 @@ Page({
     this.setData({ loading: true, loadError: false });
     request({
       url: '/menu/list',
-      data: categoryId ? { categoryId } : {},
+      // 数字 0 = 全部，不传 categoryId；>0 才按分类过滤（字符串 "0" 是 truthy，必须显式比较）
+      data: categoryId > 0 ? { categoryId } : {},
     })
       .then((menus) => this.setData({ menus, loading: false }))
       .catch(() => this.setData({ loading: false, loadError: true }));
@@ -59,9 +60,9 @@ Page({
     this.loadMenus(this.data.activeCategoryId);
   },
 
-  /** 切换分类 tab */
+  /** 切换分类 tab（「全部」是静态 data-id="0" 拿到的字符串，统一 Number 后比较） */
   onCategoryTap(e) {
-    const id = e.currentTarget.dataset.id;
+    const id = Number(e.currentTarget.dataset.id);
     if (id === this.data.activeCategoryId) return;
     this.setData({ activeCategoryId: id });
     this.loadMenus(id);

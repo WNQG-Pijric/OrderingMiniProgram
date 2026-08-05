@@ -48,7 +48,12 @@
       />
       <view class="form-ops">
         <button class="c-btn form-cancel" bindtap="onFormCancel">取消</button>
-        <button class="c-btn c-btn--primary form-save" bindtap="onFormSave">保存</button>
+        <button
+          class="c-btn c-btn--primary form-save"
+          loading="{{saving}}"
+          disabled="{{saving}}"
+          bindtap="onFormSave"
+        >{{saving ? '保存中...' : '保存'}}</button>
       </view>
     </view>
   </view>
