@@ -24,9 +24,30 @@
   gap: var(--space-md);
 }
 .header__entry {
+  position: relative;
   font-size: var(--font-size-body);
   color: var(--color-primary);
   padding: var(--space-xs) var(--space-sm);
+}
+/* 购物车角标 */
+.header__entry--cart {
+  display: flex;
+  align-items: center;
+}
+.header__badge {
+  position: absolute;
+  top: -8rpx;
+  right: -12rpx;
+  min-width: 32rpx;
+  height: 32rpx;
+  line-height: 32rpx;
+  padding: 0 var(--space-xs);
+  box-sizing: border-box;
+  background-color: var(--color-danger);
+  color: #ffffff;
+  font-size: var(--font-size-tag);
+  border-radius: var(--radius-md);
+  text-align: center;
 }
 
 /* 公告位（模块 09 填充） */

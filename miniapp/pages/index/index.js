@@ -1,6 +1,7 @@
 // 首页（模块 03：分类 tab + 菜品列表）
 // 顶部公告位预留（模块 09 填充）；首次进入静默登录，未登录也可浏览菜单。
 const auth = require('../../utils/auth');
+const cart = require('../../utils/cart');
 const { request } = require('../../utils/request');
 
 Page({
@@ -10,12 +11,23 @@ Page({
     menus: [],
     loading: false,
     loadError: false, // 菜单加载失败（与"暂无菜品"分开显示）
+    cartCount: 0, // 购物车角标（总件数）
   },
 
   onLoad() {
     this.ensureLogin();
     this.loadCategories();
     this.loadMenus();
+  },
+
+  // 从购物车/详情返回首页时刷新角标
+  onShow() {
+    this.refreshCartCount();
+  },
+
+  /** 购物车角标：总件数，超过 99 显示 99+ */
+  refreshCartCount() {
+    this.setData({ cartCount: cart.getCount() });
   },
 
   /** 静默登录：已有 token 跳过，失败不影响浏览菜单 */

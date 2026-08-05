@@ -156,6 +156,11 @@ function computeTotal(items) {
   return toMoney(cents);
 }
 
+/** 购物车总件数（首页角标用；显示层自行做 99+ 封顶） */
+function getCount() {
+  return getItems().reduce((sum, item) => sum + (Number(item.count) || 0), 0);
+}
+
 // 改规格临时上下文：购物车页写入，详情页编辑模式读取
 function setEditItem(item) {
   wx.setStorageSync(EDIT_ITEM_KEY, item);
@@ -178,6 +183,7 @@ module.exports = {
   updateItem,
   clear,
   computeTotal,
+  getCount,
   setEditItem,
   getEditItem,
   clearEditItem,

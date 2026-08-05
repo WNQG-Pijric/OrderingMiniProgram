@@ -3,7 +3,10 @@
   <view class="header">
     <text class="header__title">点餐</text>
     <view class="header__entries">
-      <text class="header__entry" bindtap="goCart">购物车</text>
+      <view class="header__entry header__entry--cart" bindtap="goCart">
+        <text>购物车</text>
+        <view wx:if="{{cartCount > 0}}" class="header__badge">{{cartCount > 99 ? '99+' : cartCount}}</view>
+      </view>
       <text class="header__entry" bindtap="goProfile">我的</text>
     </view>
   </view>
