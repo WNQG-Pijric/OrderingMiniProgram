@@ -1,18 +1,19 @@
 <view class="page">
   <view class="toolbar">
-    <button class="add-btn" bindtap="onAdd">新增分类</button>
+    <button class="c-btn c-btn--primary c-btn--sm add-btn" bindtap="onAdd">新增分类</button>
   </view>
 
-  <view wx:if="{{loading}}" class="tip">加载中...</view>
-  <view wx:elif="{{list.length === 0}}" class="tip">暂无分类</view>
+  <view wx:if="{{loading}}" class="c-empty">加载中...</view>
+  <view wx:elif="{{list.length === 0}}" class="c-empty">暂无分类</view>
 
   <view class="list">
-    <view wx:for="{{list}}" wx:key="id" class="item">
-      <view class="info">
-        <text class="name {{item.status === 0 ? 'disabled' : ''}}">{{item.name}}</text>
-        <text class="sort">排序 {{item.sort}}</text>
+    <view wx:for="{{list}}" wx:key="id" class="c-card item">
+      <view class="item__info">
+        <text class="item__name {{item.status === 0 ? 'item__name--disabled' : ''}}">{{item.name}}</text>
+        <text class="item__sort">排序 {{item.sort}}</text>
       </view>
-      <view class="ops">
+      <view class="item__ops">
+        <!-- switch color 与主色 token 一致（组件属性不支持 CSS 变量） -->
         <switch
           checked="{{item.status === 1}}"
           color="#ff9f43"
@@ -21,7 +22,7 @@
           bindchange="onToggleStatus"
         />
         <text class="op-btn" data-item="{{item}}" bindtap="onEdit">编辑</text>
-        <text class="op-btn danger" data-id="{{item.id}}" data-name="{{item.name}}" bindtap="onDelete">删除</text>
+        <text class="op-btn op-btn--danger" data-id="{{item.id}}" data-name="{{item.name}}" bindtap="onDelete">删除</text>
       </view>
     </view>
   </view>
@@ -31,14 +32,14 @@
     <view class="form-panel" catchtap="noop">
       <text class="form-title">{{form.id ? '编辑分类' : '新增分类'}}</text>
       <input
-        class="input"
+        class="form__input"
         placeholder="分类名称"
         value="{{form.name}}"
         data-field="name"
         bindinput="onFormInput"
       />
       <input
-        class="input"
+        class="form__input"
         type="number"
         placeholder="排序（越小越靠前）"
         value="{{form.sort}}"
@@ -46,8 +47,8 @@
         bindinput="onFormInput"
       />
       <view class="form-ops">
-        <button class="btn cancel" bindtap="onFormCancel">取消</button>
-        <button class="btn save" bindtap="onFormSave">保存</button>
+        <button class="c-btn form-cancel" bindtap="onFormCancel">取消</button>
+        <button class="c-btn c-btn--primary form-save" bindtap="onFormSave">保存</button>
       </view>
     </view>
   </view>

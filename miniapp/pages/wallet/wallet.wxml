@@ -1,28 +1,28 @@
 <view class="container">
   <!-- 余额卡片 -->
   <view class="balance-card">
-    <text class="label">当前余额（元）</text>
-    <text class="amount">{{balance}}</text>
+    <text class="balance-card__label">当前余额（元）</text>
+    <text class="balance-card__amount">{{balance}}</text>
   </view>
 
   <view class="section-title">收支明细</view>
 
-  <view wx:if="{{logs.length === 0 && !loading}}" class="empty">
+  <view wx:if="{{logs.length === 0 && !loading}}" class="c-empty">
     暂无流水记录
   </view>
 
   <view class="log-list">
     <view class="log-item" wx:for="{{logs}}" wx:key="id">
-      <view class="log-left">
-        <text class="log-type">{{item.typeText}}</text>
-        <text class="log-remark">{{item.remark || '—'}}</text>
-        <text class="log-time">{{item.timeText}}</text>
+      <view class="log-item__left">
+        <text class="log-item__type">{{item.typeText}}</text>
+        <text class="log-item__remark">{{item.remark || '—'}}</text>
+        <text class="log-item__time">{{item.timeText}}</text>
       </view>
-      <view class="log-right">
+      <view class="log-item__right">
         <text
-          class="log-change {{item.changeNum >= 0 ? 'plus' : 'minus'}}"
+          class="log-item__change {{item.changeNum >= 0 ? 'log-item__change--plus' : 'log-item__change--minus'}}"
         >{{item.changeText}}</text>
-        <text class="log-after">余额 {{item.balanceAfter}}</text>
+        <text class="log-item__after">余额 {{item.balanceAfter}}</text>
       </view>
     </view>
   </view>

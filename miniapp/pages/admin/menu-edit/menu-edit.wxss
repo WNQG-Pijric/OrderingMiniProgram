@@ -1,96 +1,87 @@
-/* 菜品新增 / 编辑 */
+/* 菜品新增 / 编辑 —— token 见 app.wxss / common.wxss（docs/design.md） */
 .page {
   min-height: 100vh;
-  background: #f5f5f5;
-  padding: 24rpx 32rpx 60rpx;
+  padding: var(--space-xl) var(--space-2xl) var(--space-5xl);
 }
 
 .section {
-  background: #fff;
-  border-radius: 16rpx;
-  padding: 24rpx 32rpx;
-  margin-bottom: 24rpx;
+  padding: var(--space-xl) var(--space-2xl);
+  margin-bottom: var(--space-xl);
 }
 
 .section-title {
-  font-size: 30rpx;
+  font-size: var(--font-size-body-lg);
   font-weight: 600;
+  color: var(--text-primary);
 }
 
 .section-desc {
   display: block;
-  margin-top: 8rpx;
-  font-size: 24rpx;
-  color: #999;
+  margin-top: var(--space-xs);
+  font-size: var(--font-size-small);
+  color: var(--text-placeholder);
 }
 
+/* 基本信息行 */
 .field {
   display: flex;
   align-items: center;
-  padding: 20rpx 0;
-  border-bottom: 1rpx solid #f0f0f0;
+  padding: var(--space-lg) 0;
+  border-bottom: 2rpx solid var(--border-color);
 }
-
 .field:last-child {
   border-bottom: none;
 }
-
 .label {
   width: 200rpx;
-  font-size: 28rpx;
-  color: #333;
+  font-size: var(--font-size-body);
+  color: var(--text-primary);
   flex-shrink: 0;
 }
-
-.input {
+.field__input {
   flex: 1;
-  font-size: 30rpx;
+  font-size: var(--font-size-body-lg);
 }
-
-.picker {
+.field__picker {
   flex: 1;
-  font-size: 30rpx;
+  font-size: var(--font-size-body-lg);
+  color: var(--text-primary);
 }
-
-.picker.placeholder {
-  color: #999;
+.field__picker--placeholder {
+  color: var(--text-placeholder);
 }
 
 /* 图片 */
 .image-box {
-  margin-top: 20rpx;
+  margin-top: var(--space-lg);
   display: flex;
   align-items: center;
 }
-
 .preview {
   width: 240rpx;
   height: 240rpx;
-  border-radius: 12rpx;
+  border-radius: var(--radius-md);
 }
-
-.empty {
-  border: 2rpx dashed #ccc;
+.preview--empty {
+  border: 2rpx dashed var(--border-strong);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #999;
-  font-size: 28rpx;
+  color: var(--text-placeholder);
+  font-size: var(--font-size-body);
 }
-
-.uploading {
-  background: #f0f0f0;
+.preview--uploading {
+  background-color: var(--bg-muted);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #999;
-  font-size: 26rpx;
+  color: var(--text-placeholder);
+  font-size: var(--font-size-body-sm);
 }
-
 .remove-img {
-  margin-left: 24rpx;
-  font-size: 26rpx;
-  color: #ff4d2e;
+  margin-left: var(--space-xl);
+  font-size: var(--font-size-body-sm);
+  color: var(--color-danger);
 }
 
 /* 规格 */
@@ -99,79 +90,60 @@
   align-items: center;
   justify-content: space-between;
 }
-
 .add-group {
-  font-size: 28rpx;
-  color: #ff9f43;
+  font-size: var(--font-size-body);
+  color: var(--color-primary);
 }
-
 .group {
-  margin-top: 24rpx;
-  background: #fafafa;
-  border-radius: 12rpx;
-  padding: 20rpx;
+  margin-top: var(--space-xl);
+  background-color: var(--bg-page);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
 }
-
 .group-head {
   display: flex;
   align-items: center;
 }
-
-.group-name {
-  background: #fff;
-  border: 1rpx solid #eee;
-  border-radius: 8rpx;
-  padding: 12rpx 16rpx;
+.group-name,
+.item-name,
+.item-price {
+  background-color: var(--bg-card);
+  border: 2rpx solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: var(--space-sm) var(--space-md);
 }
-
 .remove-group {
-  margin-left: 16rpx;
-  font-size: 24rpx;
-  color: #ff4d2e;
+  margin-left: var(--space-md);
+  font-size: var(--font-size-small);
+  color: var(--color-danger);
   flex-shrink: 0;
 }
-
 .item-row {
   display: flex;
   align-items: center;
-  margin-top: 16rpx;
+  margin-top: var(--space-md);
 }
-
 .item-name {
   flex: 1;
-  background: #fff;
-  border: 1rpx solid #eee;
-  border-radius: 8rpx;
-  padding: 12rpx 16rpx;
 }
-
 .item-price {
   width: 140rpx;
-  margin-left: 16rpx;
-  background: #fff;
-  border: 1rpx solid #eee;
-  border-radius: 8rpx;
-  padding: 12rpx 16rpx;
+  margin-left: var(--space-md);
 }
-
 .remove-item {
-  margin-left: 12rpx;
-  font-size: 32rpx;
-  color: #999;
-  padding: 0 8rpx;
+  margin-left: var(--space-sm);
+  font-size: var(--font-size-title-sm);
+  color: var(--text-placeholder);
+  padding: 0 var(--space-xs);
 }
-
 .add-item {
   display: inline-block;
-  margin-top: 16rpx;
-  font-size: 26rpx;
-  color: #576b95;
+  margin-top: var(--space-md);
+  font-size: var(--font-size-body-sm);
+  color: var(--color-link);
 }
 
+/* 保存按钮 */
 .save-btn {
-  background: #ff9f43;
-  color: #fff;
-  font-size: 32rpx;
-  border-radius: 44rpx;
-  margin-top: 16rpx;
+  margin-top: var(--space-md);
 }

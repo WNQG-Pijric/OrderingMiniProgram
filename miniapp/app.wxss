@@ -1,6 +1,78 @@
-/* 全局样式 */
+/**
+ * app.wxss — 全局样式与设计 Token 体系
+ * 设计规范详见 docs/design.md
+ *
+ * 硬性约定：
+ * 1. 所有页面禁止硬编码色值/字号/间距，一律引用下方 CSS 变量（page 定义，全局继承）
+ * 2. 公共样式类（c- 前缀）见 common.wxss，新页面优先复用
+ * 3. 新增 token 需同步更新 docs/design.md
+ */
+
+@import "common.wxss";
+
 page {
-  background-color: #f5f5f5;
-  font-size: 28rpx;
-  color: #333;
+  /* ===== 色彩 ===== */
+  --color-primary: #ff9f43;          /* 主色 · 暖橙 */
+  --color-primary-active: #ff8c42;   /* 主色 · 按压态 */
+  --color-primary-deep: #ff6a3d;     /* 主色 · 深渐变终点 */
+  --color-primary-light: #fff3e6;    /* 主色 · 浅色底 */
+  --color-danger: #ff4d2e;           /* 强调红 · 价格高亮/危险操作 */
+  --color-success: #07c160;          /* 成功 · 微信绿 */
+  --color-link: #576b95;             /* 链接 · 微信蓝 */
+  --color-mask: rgba(0, 0, 0, 0.5);  /* 遮罩层 */
+
+  /* ===== 文本色阶 ===== */
+  --text-primary: #333333;       /* 一级文本 */
+  --text-secondary: #666666;     /* 二级文本 */
+  --text-tertiary: #888888;      /* 三级文本 */
+  --text-placeholder: #999999;   /* 占位符 */
+  --text-disabled: #cccccc;      /* 禁用文本 */
+
+  /* ===== 背景与边框 ===== */
+  --bg-page: #f5f5f5;        /* 页面背景 */
+  --bg-card: #ffffff;        /* 卡片/内容背景 */
+  --bg-muted: #f0f0f0;       /* 次级背景 · 输入框底 */
+  --bg-disabled: #eeeeee;    /* 禁用背景 */
+  --border-color: #eeeeee;   /* 分割线/弱边框 */
+  --border-strong: #dddddd;  /* 强调边框 */
+
+  /* ===== 字号阶梯（rpx） ===== */
+  --font-size-tag: 22rpx;        /* 标签角标 */
+  --font-size-small: 24rpx;      /* 辅助说明 */
+  --font-size-body-sm: 26rpx;    /* 次要正文 */
+  --font-size-body: 28rpx;       /* 基础正文 */
+  --font-size-body-lg: 30rpx;    /* 强调正文 */
+  --font-size-title-sm: 32rpx;   /* 小标题 */
+  --font-size-title: 36rpx;      /* 标题 */
+  --font-size-title-lg: 40rpx;   /* 大标题 */
+  --font-size-page-title: 44rpx; /* 页面大标题 */
+  --font-size-display: 72rpx;    /* 展示大数字（余额等） */
+
+  /* ===== 间距阶梯（rpx，4 的倍数） ===== */
+  --space-xs: 8rpx;
+  --space-sm: 12rpx;
+  --space-md: 16rpx;
+  --space-lg: 20rpx;
+  --space-xl: 24rpx;
+  --space-2xl: 32rpx;
+  --space-3xl: 40rpx;
+  --space-4xl: 48rpx;
+  --space-5xl: 60rpx;
+  --space-6xl: 80rpx;
+
+  /* ===== 圆角 ===== */
+  --radius-sm: 8rpx;    /* 标签/小元素 */
+  --radius-md: 12rpx;   /* 输入框 */
+  --radius-lg: 16rpx;   /* 卡片 */
+  --radius-xl: 28rpx;   /* 大容器 */
+  --radius-full: 44rpx; /* 胶囊按钮 */
+
+  /* ===== 阴影 ===== */
+  --shadow-card: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);  /* 卡片层级 */
+  --shadow-pop: 0 4rpx 16rpx rgba(0, 0, 0, 0.12);  /* 弹层/浮层 */
+
+  /* ===== 基础样式 ===== */
+  background-color: var(--bg-page);
+  font-size: var(--font-size-body);
+  color: var(--text-primary);
 }

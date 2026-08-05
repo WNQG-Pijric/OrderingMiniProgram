@@ -1,31 +1,96 @@
-.container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 120rpx 60rpx;
+/* 首页样式 —— 设计 token 见 app.wxss / common.wxss（docs/design.md） */
+
+.page {
+  min-height: 100vh;
+  padding-bottom: var(--space-6xl);
 }
 
-.user {
+/* 顶部栏 */
+.header {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 16rpx;
+  justify-content: space-between;
+  padding: var(--space-2xl) var(--space-3xl) var(--space-xl);
+  background-color: var(--bg-card);
 }
-
-.nickname {
-  font-size: 36rpx;
+.header__title {
+  font-size: var(--font-size-title-lg);
   font-weight: 600;
+  color: var(--text-primary);
+}
+.header__entry {
+  font-size: var(--font-size-body);
+  color: var(--color-primary);
+  padding: var(--space-xs) var(--space-sm);
 }
 
-.balance {
-  color: #888;
+/* 公告位（模块 09 填充） */
+.notice-placeholder {
+  height: 0;
 }
 
-.profile-btn {
-  margin-top: 40rpx;
-  width: 480rpx;
+/* 分类 tab */
+.tabs {
+  white-space: nowrap;
+  padding: var(--space-md) var(--space-xl);
+  background-color: var(--bg-card);
+  border-bottom: 2rpx solid var(--border-color);
+  box-sizing: border-box;
+}
+.tab {
+  display: inline-block;
+  padding: var(--space-sm) var(--space-lg);
+  margin-right: var(--space-sm);
+  font-size: var(--font-size-body);
+  color: var(--text-secondary);
+  border-radius: var(--radius-full);
+  background-color: var(--bg-muted);
+}
+.tab--active {
+  color: #ffffff;
+  background-color: var(--color-primary);
+  font-weight: 500;
 }
 
-.login-btn {
-  width: 480rpx;
+/* 菜品列表 */
+.menu-list {
+  padding: var(--space-lg) var(--space-xl);
+}
+.menu-item {
+  display: flex;
+  background-color: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: var(--space-xl);
+  margin-bottom: var(--space-lg);
+  box-shadow: var(--shadow-card);
+}
+.menu-item__img {
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: var(--radius-md);
+  flex-shrink: 0;
+  background-color: var(--bg-muted);
+}
+.menu-item__info {
+  flex: 1;
+  min-width: 0;
+  margin-left: var(--space-xl);
+  display: flex;
+  flex-direction: column;
+}
+.menu-item__name {
+  font-size: var(--font-size-body-lg);
+  font-weight: 500;
+  color: var(--text-primary);
+}
+.menu-item__desc {
+  margin-top: var(--space-xs);
+  font-size: var(--font-size-body-sm);
+  color: var(--text-tertiary);
+}
+.menu-item__bottom {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }

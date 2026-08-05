@@ -1,0 +1,175 @@
+/**
+ * common.wxss — 公共样式库（c- 前缀，避免与页面私有类名冲突）
+ * 经 app.wxss @import 全局生效；所有值引用 app.wxss 的 token 变量
+ * 类名清单与使用说明见 docs/design.md「公共样式类」
+ *
+ * 命名约定：c- 前缀 + 语义名；修饰态用 -- 后缀
+ */
+
+/* ===== 按钮 ===== */
+/* 清除微信 button 元素原生 ::after 边框（c-btn 用于 button 时） */
+.c-btn::after {
+  border: none;
+}
+.c-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 80rpx;
+  padding: 0 var(--space-3xl);
+  font-size: var(--font-size-body-lg);
+  border-radius: var(--radius-full);
+  border: 2rpx solid transparent;
+  box-sizing: border-box;
+  transition: opacity 0.2s;
+}
+.c-btn--primary {
+  background-color: var(--color-primary);
+  color: #ffffff;
+}
+.c-btn--primary:active {
+  background-color: var(--color-primary-active);
+}
+.c-btn--danger {
+  background-color: var(--color-danger);
+  color: #ffffff;
+}
+.c-btn--ghost {
+  background-color: var(--bg-card);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+.c-btn--disabled {
+  background-color: var(--bg-disabled);
+  color: var(--text-disabled);
+}
+.c-btn--block {
+  width: 100%;
+}
+.c-btn--sm {
+  height: 60rpx;
+  padding: 0 var(--space-xl);
+  font-size: var(--font-size-body-sm);
+}
+.c-btn--lg {
+  height: 96rpx;
+  font-size: 32rpx;
+}
+
+/* ===== 卡片 ===== */
+.c-card {
+  background-color: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: var(--space-xl);
+  box-shadow: var(--shadow-card);
+}
+
+/* ===== 列表单元格 ===== */
+.c-cell {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-xl) 0;
+  font-size: var(--font-size-body);
+  color: var(--text-primary);
+}
+.c-cell + .c-cell {
+  border-top: 2rpx solid var(--border-color);
+}
+.c-cell__label {
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+.c-cell__value {
+  color: var(--text-primary);
+  text-align: right;
+  word-break: break-all;
+}
+
+/* ===== 标签 ===== */
+.c-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 4rpx var(--space-sm);
+  font-size: var(--font-size-tag);
+  color: var(--color-primary);
+  background-color: var(--color-primary-light);
+  border-radius: var(--radius-sm);
+}
+.c-tag--danger {
+  color: var(--color-danger);
+  background-color: #ffe8e4;
+}
+.c-tag--success {
+  color: var(--color-success);
+  background-color: #e7f9ef;
+}
+
+/* ===== 价格 ===== */
+.c-price {
+  color: var(--color-danger);
+  font-weight: 600;
+  font-size: var(--font-size-body-lg);
+}
+.c-price::before {
+  content: "¥";
+  font-size: var(--font-size-small);
+  margin-right: 2rpx;
+}
+
+/* ===== 分割线 ===== */
+.c-divider {
+  height: 2rpx;
+  background-color: var(--border-color);
+  border: none;
+}
+
+/* ===== 文本工具类 ===== */
+.c-ellipsis {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.c-ellipsis-2 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+.c-text-primary {
+  color: var(--text-primary);
+}
+.c-text-secondary {
+  color: var(--text-secondary);
+}
+.c-text-tertiary {
+  color: var(--text-tertiary);
+}
+.c-text-placeholder {
+  color: var(--text-placeholder);
+}
+
+/* ===== 布局工具 ===== */
+.c-flex {
+  display: flex;
+  align-items: center;
+}
+.c-flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.c-safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* ===== 空状态 ===== */
+.c-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6xl) var(--space-3xl);
+  color: var(--text-tertiary);
+  font-size: var(--font-size-body-sm);
+}

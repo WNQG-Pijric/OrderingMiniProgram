@@ -1,100 +1,91 @@
-/* 菜品详情：选规格 + 数量 + 计价 */
+/* 菜品详情：选规格 + 数量 + 计价 —— token 见 app.wxss / common.wxss（docs/design.md） */
 .page {
   min-height: 100vh;
-  background: #f5f5f5;
-  padding-bottom: 140rpx;
+  padding-bottom: 200rpx; /* 底部固定栏避让高度 */
 }
 
+/* 菜品信息 */
 .menu-header {
   display: flex;
-  background: #fff;
-  padding: 32rpx;
+  background-color: var(--bg-card);
+  padding: var(--space-2xl);
 }
-
-.menu-img {
+.menu-header__img {
   width: 220rpx;
   height: 220rpx;
-  border-radius: 16rpx;
+  border-radius: var(--radius-lg);
   flex-shrink: 0;
 }
-
-.placeholder {
-  background: #eee;
+.menu-header__img--placeholder {
+  background-color: var(--bg-muted);
 }
-
-.menu-title {
+.menu-header__info {
   flex: 1;
-  margin-left: 32rpx;
+  min-width: 0;
+  margin-left: var(--space-2xl);
   display: flex;
   flex-direction: column;
 }
-
-.menu-name {
-  font-size: 40rpx;
+.menu-header__name {
+  font-size: var(--font-size-title-lg);
   font-weight: 600;
+  color: var(--text-primary);
 }
-
-.menu-desc {
-  margin-top: 12rpx;
-  font-size: 26rpx;
-  color: #999;
+.menu-header__desc {
+  margin-top: var(--space-sm);
+  font-size: var(--font-size-body-sm);
+  color: var(--text-placeholder);
 }
-
-.menu-price {
+.menu-header__price {
   margin-top: auto;
-  font-size: 40rpx;
-  color: #ff4d2e;
-  font-weight: 600;
+  font-size: var(--font-size-title-lg);
 }
 
 /* 规格 */
 .spec-section {
-  margin-top: 20rpx;
-  background: #fff;
-  padding: 32rpx;
+  margin-top: var(--space-lg);
+  background-color: var(--bg-card);
+  padding: var(--space-2xl);
 }
-
 .spec-group {
-  margin-bottom: 32rpx;
+  margin-bottom: var(--space-2xl);
 }
-
-.spec-group-name {
-  font-size: 30rpx;
+.spec-group:last-child {
+  margin-bottom: 0;
+}
+.spec-group__name {
+  font-size: var(--font-size-body-lg);
   font-weight: 500;
+  color: var(--text-primary);
 }
-
-.spec-items {
-  margin-top: 16rpx;
+.spec-group__items {
+  margin-top: var(--space-md);
   display: flex;
   flex-wrap: wrap;
 }
-
 .spec-item {
   display: flex;
   align-items: center;
-  padding: 12rpx 24rpx;
-  margin: 0 16rpx 16rpx 0;
-  background: #f5f5f5;
-  border-radius: 12rpx;
-  font-size: 28rpx;
-  color: #333;
+  padding: var(--space-sm) var(--space-xl);
+  margin: 0 var(--space-md) var(--space-md) 0;
+  background-color: var(--bg-muted);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-body);
+  color: var(--text-primary);
 }
-
-.spec-item.active {
-  background: #fff3e6;
-  color: #ff9f43;
-  border: 1rpx solid #ff9f43;
+.spec-item--active {
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+  border: 2rpx solid var(--color-primary);
 }
-
-.spec-price {
-  margin-left: 8rpx;
-  font-size: 24rpx;
-  color: #ff4d2e;
+.spec-item__price {
+  margin-left: var(--space-xs);
+  font-size: var(--font-size-small);
+  color: var(--color-danger);
 }
-
-.no-spec {
-  font-size: 26rpx;
-  color: #999;
+.spec-section__empty {
+  font-size: var(--font-size-body-sm);
+  color: var(--text-placeholder);
 }
 
 /* 底部固定栏 */
@@ -103,51 +94,41 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: #fff;
+  background-color: var(--bg-card);
   display: flex;
   align-items: center;
-  padding: 20rpx 32rpx;
-  border-top: 1rpx solid #eee;
+  padding: var(--space-lg) var(--space-2xl);
+  padding-bottom: calc(var(--space-lg) + env(safe-area-inset-bottom));
+  border-top: 2rpx solid var(--border-color);
 }
-
 .count-box {
   display: flex;
   align-items: center;
 }
-
 .count-btn {
   width: 56rpx;
   height: 56rpx;
   line-height: 52rpx;
   text-align: center;
-  border: 1rpx solid #ddd;
+  border: 2rpx solid var(--border-strong);
   border-radius: 50%;
-  font-size: 36rpx;
+  font-size: var(--font-size-title);
+  color: var(--text-primary);
 }
-
-.count-btn.disabled {
-  color: #ccc;
+.count-btn--disabled {
+  color: var(--text-disabled);
 }
-
-.count {
+.count-box__num {
   min-width: 80rpx;
   text-align: center;
-  font-size: 32rpx;
+  font-size: var(--font-size-title-sm);
 }
-
-.total {
+.footer__total {
   flex: 1;
   text-align: right;
-  font-size: 40rpx;
-  color: #ff4d2e;
-  font-weight: 600;
-  margin-right: 24rpx;
+  font-size: var(--font-size-title-lg);
+  margin-right: var(--space-xl);
 }
-
-.cart-btn {
-  background: #ff9f43;
-  color: #fff;
-  font-size: 30rpx;
-  padding: 18rpx 48rpx;
-  border-radius: 44rpx;
+.footer__cart {
+  flex-shrink: 0;
 }

@@ -1,129 +1,106 @@
-/* 菜单管理 */
+/* 菜单管理 —— token 见 app.wxss / common.wxss（docs/design.md） */
 .page {
   min-height: 100vh;
-  background: #f5f5f5;
-  padding-bottom: 40rpx;
+  padding-bottom: var(--space-3xl);
 }
 
+/* 顶部工具栏 */
 .toolbar {
-  background: #fff;
-  padding: 24rpx 32rpx;
+  background-color: var(--bg-card);
+  padding: var(--space-xl) var(--space-2xl);
   display: flex;
   align-items: center;
   justify-content: space-between;
+  border-bottom: 2rpx solid var(--border-color);
 }
-
-.filters {
+.toolbar__filters {
   display: flex;
 }
-
 .filter {
-  margin-right: 16rpx;
-  padding: 10rpx 24rpx;
-  border-radius: 28rpx;
-  font-size: 28rpx;
-  color: #666;
-  background: #f5f5f5;
+  margin-right: var(--space-md);
+  padding: var(--space-sm) var(--space-xl);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-body);
+  color: var(--text-secondary);
+  background-color: var(--bg-muted);
 }
-
-.filter.active {
-  color: #fff;
-  background: #ff9f43;
+.filter--active {
+  color: #ffffff;
+  background-color: var(--color-primary);
 }
-
-.ops {
+.toolbar__ops {
   display: flex;
   align-items: center;
 }
-
 .link-btn {
-  font-size: 26rpx;
-  color: #576b95;
-  margin-right: 20rpx;
+  font-size: var(--font-size-body-sm);
+  color: var(--color-link);
+  margin-right: var(--space-lg);
 }
-
 .add-btn {
-  background: #ff9f43;
-  color: #fff;
-  font-size: 26rpx;
-  padding: 0 28rpx;
-  line-height: 60rpx;
-  border-radius: 30rpx;
   margin: 0;
 }
 
-.tip,
-.end-tip {
-  text-align: center;
-  color: #999;
-  padding: 80rpx 0;
-  font-size: 28rpx;
-}
-
-.end-tip {
-  padding: 24rpx 0;
-  font-size: 24rpx;
-}
-
+/* 菜品列表 */
 .list {
-  padding: 24rpx 32rpx;
+  padding: var(--space-xl) var(--space-2xl);
 }
-
 .item {
   display: flex;
   align-items: center;
-  background: #fff;
-  border-radius: 16rpx;
-  padding: 24rpx;
-  margin-bottom: 20rpx;
+  margin-bottom: var(--space-lg);
 }
-
-.img {
+.item__img {
   width: 120rpx;
   height: 120rpx;
-  border-radius: 12rpx;
+  border-radius: var(--radius-md);
   flex-shrink: 0;
 }
-
-.placeholder {
-  background: #eee;
+.item__img--placeholder {
+  background-color: var(--bg-muted);
 }
-
-.info {
+.item__info {
   flex: 1;
-  margin-left: 24rpx;
+  min-width: 0;
+  margin-left: var(--space-xl);
   display: flex;
   flex-direction: column;
 }
-
-.name {
-  font-size: 30rpx;
+.item__name {
+  font-size: var(--font-size-body-lg);
   font-weight: 500;
+  color: var(--text-primary);
 }
-
-.name.disabled {
-  color: #999;
+.item__name--disabled {
+  color: var(--text-placeholder);
   text-decoration: line-through;
 }
-
-.meta {
-  margin-top: 8rpx;
-  font-size: 24rpx;
-  color: #999;
+.item__meta {
+  margin-top: var(--space-xs);
+  font-size: var(--font-size-small);
+  color: var(--text-placeholder);
 }
-
-.spec {
-  margin-top: 8rpx;
-  font-size: 22rpx;
-  color: #ff9f43;
+.item__spec-row {
+  margin-top: var(--space-xs);
 }
-
+.item__ops {
+  display: flex;
+  align-items: center;
+  margin-left: var(--space-sm);
+}
 .op-btn {
-  margin-left: 20rpx;
-  font-size: 28rpx;
-  color: #576b95;
+  margin-left: var(--space-lg);
+  font-size: var(--font-size-body);
+  color: var(--color-link);
+}
+.op-btn--danger {
+  color: var(--color-danger);
 }
 
-.op-btn.danger {
-  color: #ff4d2e;
+/* 底部提示 */
+.end-tip {
+  text-align: center;
+  color: var(--text-placeholder);
+  padding: var(--space-xl) 0;
+  font-size: var(--font-size-small);
 }

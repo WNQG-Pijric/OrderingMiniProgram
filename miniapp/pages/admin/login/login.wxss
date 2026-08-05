@@ -1,34 +1,25 @@
-/* 管理员登录 */
+/* 管理员登录 —— token 见 app.wxss / common.wxss（docs/design.md） */
 .page {
   min-height: 100vh;
-  background: #f5f5f5;
-  padding: 160rpx 64rpx;
+  padding: 160rpx var(--space-5xl);
 }
 
 .logo {
   text-align: center;
-  font-size: 44rpx;
+  font-size: var(--font-size-page-title);
   font-weight: 600;
-  margin-bottom: 80rpx;
+  color: var(--text-primary);
+  margin-bottom: var(--space-6xl);
 }
 
 .form {
-  background: #fff;
-  border-radius: 16rpx;
-  padding: 48rpx 40rpx;
+  padding: var(--space-4xl) var(--space-3xl);
 }
-
-.input {
-  border: 1rpx solid #ddd;
-  border-radius: 12rpx;
-  padding: 20rpx 24rpx;
-  margin-bottom: 32rpx;
-  font-size: 30rpx;
-}
-
-.login-btn {
-  background: #ff9f43;
-  color: #fff;
-  border-radius: 44rpx;
-  font-size: 32rpx;
+.form__input {
+  border: 2rpx solid var(--border-strong);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg) var(--space-xl);
+  margin-bottom: var(--space-2xl);
+  font-size: var(--font-size-body-lg);
+  background-color: var(--bg-card);
 }

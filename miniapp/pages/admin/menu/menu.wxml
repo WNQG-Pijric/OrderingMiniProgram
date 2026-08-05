@@ -1,30 +1,33 @@
 <view class="page">
   <!-- 筛选 + 操作 -->
   <view class="toolbar">
-    <view class="filters">
-      <view class="filter {{status === '' ? 'active' : ''}}" data-status="" bindtap="onFilterTap">全部</view>
-      <view class="filter {{status === 1 ? 'active' : ''}}" data-status="1" bindtap="onFilterTap">上架</view>
-      <view class="filter {{status === 0 ? 'active' : ''}}" data-status="0" bindtap="onFilterTap">下架</view>
+    <view class="toolbar__filters">
+      <view class="filter {{status === '' ? 'filter--active' : ''}}" data-status="" bindtap="onFilterTap">全部</view>
+      <view class="filter {{status === 1 ? 'filter--active' : ''}}" data-status="1" bindtap="onFilterTap">上架</view>
+      <view class="filter {{status === 0 ? 'filter--active' : ''}}" data-status="0" bindtap="onFilterTap">下架</view>
     </view>
-    <view class="ops">
+    <view class="toolbar__ops">
       <text class="link-btn" bindtap="goCategory">分类管理</text>
-      <button class="add-btn" bindtap="onAdd">新增菜品</button>
+      <button class="c-btn c-btn--primary c-btn--sm add-btn" bindtap="onAdd">新增菜品</button>
     </view>
   </view>
 
-  <view wx:if="{{loading && list.length === 0}}" class="tip">加载中...</view>
-  <view wx:elif="{{list.length === 0}}" class="tip">暂无菜品</view>
+  <view wx:if="{{loading && list.length === 0}}" class="c-empty">加载中...</view>
+  <view wx:elif="{{list.length === 0}}" class="c-empty">暂无菜品</view>
 
   <view class="list">
-    <view wx:for="{{list}}" wx:key="id" class="item">
-      <image wx:if="{{item.image}}" class="img" src="{{item.image}}" mode="aspectFill" />
-      <view wx:else class="img placeholder"></view>
-      <view class="info">
-        <text class="name {{item.status === 0 ? 'disabled' : ''}}">{{item.name}}</text>
-        <text class="meta">¥{{item.price}} · 库存 {{item.stock}} · 销量 {{item.sales}}</text>
-        <text wx:if="{{item.specGroups.length > 0}}" class="spec">{{item.specGroups.length}} 组规格</text>
+    <view wx:for="{{list}}" wx:key="id" class="c-card item">
+      <image wx:if="{{item.image}}" class="item__img" src="{{item.image}}" mode="aspectFill" />
+      <view wx:else class="item__img item__img--placeholder"></view>
+      <view class="item__info">
+        <text class="item__name {{item.status === 0 ? 'item__name--disabled' : ''}}">{{item.name}}</text>
+        <text class="item__meta">¥{{item.price}} · 库存 {{item.stock}} · 销量 {{item.sales}}</text>
+        <view wx:if="{{item.specGroups.length > 0}}" class="item__spec-row">
+          <text class="c-tag">{{item.specGroups.length}} 组规格</text>
+        </view>
       </view>
-      <view class="ops">
+      <view class="item__ops">
+        <!-- switch color 与主色 token 一致（组件属性不支持 CSS 变量） -->
         <switch
           checked="{{item.status === 1}}"
           color="#ff9f43"
@@ -33,7 +36,7 @@
           bindchange="onToggleStatus"
         />
         <text class="op-btn" data-id="{{item.id}}" bindtap="onEdit">编辑</text>
-        <text class="op-btn danger" data-id="{{item.id}}" data-name="{{item.name}}" bindtap="onDelete">删除</text>
+        <text class="op-btn op-btn--danger" data-id="{{item.id}}" data-name="{{item.name}}" bindtap="onDelete">删除</text>
       </view>
     </view>
   </view>
