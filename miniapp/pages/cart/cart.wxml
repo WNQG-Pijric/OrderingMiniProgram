@@ -24,6 +24,7 @@
         <view wx:else class="cart-item__img cart-item__img--placeholder"></view>
         <view class="cart-item__info">
           <text class="cart-item__name c-ellipsis">{{item.menuName}}</text>
+          <text wx:if="{{item.stale}}" class="cart-item__stale">{{item.stale}}</text>
           <text wx:if="{{item.specText}}" class="cart-item__spec c-ellipsis">{{item.specText}}</text>
           <view class="cart-item__bottom">
             <text class="c-price">{{item.unitPrice}}</text>

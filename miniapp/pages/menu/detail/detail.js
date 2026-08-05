@@ -11,6 +11,7 @@ Page({
     unitPrice: '0.00', // 单价 = 基础价 + 规格加价（购物车存此值）
     specText: '', // 已选规格文本快照（如：甜度/半糖 温度/少冰）
     isEdit: false, // 从购物车进入的改规格模式
+    soldOut: false, // 库存 0：数量控件与加购按钮禁用
   },
 
   onLoad(options) {
@@ -49,6 +50,7 @@ Page({
               ? Math.max(1, Number(this.editItem.count) || 1)
               : 1,
           isEdit: this.isEdit,
+          soldOut: Number(menu.stock) <= 0,
         });
         this.calcPrice();
       })
@@ -66,6 +68,8 @@ Page({
   },
 
   onPlus() {
+    // 数量上限 = 库存（售罄时加号禁用）
+    if (this.data.count >= Number(this.data.menu.stock)) return;
     this.setData({ count: this.data.count + 1 });
     this.calcPrice();
   },
@@ -104,6 +108,10 @@ Page({
   addToCart() {
     const { menu, selections, count } = this.data;
     if (!menu) return;
+    if (this.data.soldOut) return; // 售罄按钮已禁用，防御
+    if (count > Number(menu.stock)) {
+      return wx.showToast({ title: '库存不足', icon: 'none' });
+    }
     const specIds = (menu.specGroups || [])
       .map((g) => selections[g.id])
       .filter(Boolean);

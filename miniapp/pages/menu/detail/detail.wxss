@@ -129,6 +129,11 @@
   font-size: var(--font-size-title-lg);
   margin-right: var(--space-xl);
 }
+.footer__soldout {
+  margin-right: var(--space-xl);
+  font-size: var(--font-size-body-sm);
+  color: var(--color-danger);
+}
 .footer__cart {
   flex-shrink: 0;
 }

@@ -69,6 +69,13 @@
   font-size: var(--font-size-small);
   color: var(--text-tertiary);
 }
+/* 过期标记：已下架 / 库存不足（本地缓存校验结果） */
+.cart-item__stale {
+  display: block;
+  margin-top: var(--space-xs);
+  font-size: var(--font-size-small);
+  color: var(--color-danger);
+}
 .cart-item__bottom {
   margin-top: var(--space-sm);
   display: flex;

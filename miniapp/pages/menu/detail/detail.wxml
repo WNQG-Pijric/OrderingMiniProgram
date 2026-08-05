@@ -34,14 +34,15 @@
     </view>
   </view>
 
-  <!-- 底部固定栏：数量 + 总价 + 加入购物车 -->
+  <!-- 底部固定栏：数量 + 总价 + 加入购物车（售罄时全禁用） -->
   <view class="footer">
     <view class="count-box">
-      <view class="count-btn {{count <= 1 ? 'count-btn--disabled' : ''}}" bindtap="onMinus">-</view>
+      <view class="count-btn {{count <= 1 || soldOut ? 'count-btn--disabled' : ''}}" bindtap="onMinus">-</view>
       <text class="count-box__num">{{count}}</text>
-      <view class="count-btn" bindtap="onPlus">+</view>
+      <view class="count-btn {{count >= menu.stock || soldOut ? 'count-btn--disabled' : ''}}" bindtap="onPlus">+</view>
     </view>
     <text class="c-price footer__total">{{totalPrice}}</text>
-    <view class="c-btn c-btn--primary footer__cart" bindtap="addToCart">{{isEdit ? '保存修改' : '加入购物车'}}</view>
+    <text wx:if="{{soldOut}}" class="footer__soldout">已售罄</text>
+    <view class="c-btn c-btn--primary footer__cart {{soldOut ? 'c-btn--disabled' : ''}}" bindtap="addToCart">{{soldOut ? '已售罄' : (isEdit ? '保存修改' : '加入购物车')}}</view>
   </view>
 </view>

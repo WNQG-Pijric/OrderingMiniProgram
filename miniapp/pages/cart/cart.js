@@ -15,10 +15,14 @@ Page({
     allChecked: false,
     hasItems: false,
     totalPrice: '0.00',
+    staleMap: {}, // key -> 过期标记（'已下架' / '库存不足'），本地缓存校验结果
   },
 
   onShow() {
-    this.ensureUser().finally(() => this.render());
+    this.ensureUser().finally(() => {
+      this.render();
+      this.validateItems();
+    });
   },
 
   /** 确保有当前 userId：旧安装缺 user 缓存时用 /users/profile 恢复 */
@@ -50,6 +54,7 @@ Page({
     const decorated = items.map((item) => ({
       ...item,
       checked: selectedKeys.includes(item.key),
+      stale: this.data.staleMap[item.key] || '',
     }));
     const selectedItems = items.filter((item) =>
       selectedKeys.includes(item.key)
@@ -61,6 +66,34 @@ Page({
       allChecked: items.length > 0 && selectedKeys.length === items.length,
       hasItems: items.length > 0,
       totalPrice: cart.computeTotal(selectedItems),
+    });
+  },
+
+  /**
+   * 校验本地缓存是否过期（04-cart 关键规则：本地缓存可能过期）：
+   * 对每条轻量请求 /menu/:id，下架 →「已下架」，库存小于数量 →「库存不足」。
+   * 校验失败（网络）不阻塞结算，模块 05 仍服务端重算。
+   */
+  validateItems() {
+    const items = this.data.items;
+    if (!items.length) return;
+    const checks = items.map((item) =>
+      request({ url: `/menu/${item.menuId}` })
+        .then((menu) => {
+          if (Number(menu.status) !== 1) return { key: item.key, stale: '已下架' };
+          if (Number(menu.stock) < Number(item.count)) {
+            return { key: item.key, stale: '库存不足' };
+          }
+          return { key: item.key, stale: '' };
+        })
+        .catch(() => null)
+    );
+    Promise.all(checks).then((results) => {
+      const staleMap = {};
+      results.forEach((r) => {
+        if (r && r.stale) staleMap[r.key] = r.stale;
+      });
+      this.setData({ staleMap });
     });
   },
 
@@ -153,6 +186,12 @@ Page({
     );
     if (!selectedItems.length) {
       wx.showToast({ title: '请先选择商品', icon: 'none' });
+      return;
+    }
+    // 已下架 / 库存不足的条目不能结算
+    const staleItems = selectedItems.filter((item) => this.data.staleMap[item.key]);
+    if (staleItems.length) {
+      wx.showToast({ title: '含已下架或库存不足的商品，请先移除', icon: 'none' });
       return;
     }
     const checkoutItems = selectedItems.map((item) => {
