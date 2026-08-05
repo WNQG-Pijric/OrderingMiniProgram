@@ -71,6 +71,7 @@ restaurant-system/
 - 金额统一用 Prisma `Decimal`，禁止浮点数运算。
 - 遵循 ESLint / Prettier；方法、变量命名清晰，注释使用中文。
 - 每个 Service 的公共方法补充 JSDoc / 中文注释。
+- **前端样式规范（强制）**：页面样式遵循 `docs/design.md` —— 一律引用 `app.wxss` 的 CSS 变量 token（`var(--xxx)`），公共样式复用 `common.wxss` 的 `c-` 前缀类（按钮/卡片/列表/标签/价格等），**禁止硬编码色值/字号/间距**；新增 token 必须同步更新 `docs/design.md` 与 `app.wxss`。
 
 ## 六、Git 规范（Conventional Commits）
 

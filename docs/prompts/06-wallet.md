@@ -1,6 +1,7 @@
 # 06-wallet：钱包模块（余额支付 / 退款回补 / 流水）
 
 > 前置规则：`docs/prompts/00-project-rule.md`。依赖模块 00 schema、05 order。
+> 样式规范：前端页面遵循 `docs/design.md`（app.wxss token + common.wxss `c-` 公共类），禁止硬编码色值/字号/间距。
 >
 > 涉及金额、并发，本项目**安全底线最高的模块**。
 

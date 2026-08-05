@@ -1,6 +1,7 @@
 # 04-cart：购物车模块（本地缓存，纯前端）
 
 > 前置规则：`docs/prompts/00-project-rule.md`。本模块**无后端接口**。
+> 样式规范：前端页面遵循 `docs/design.md`（app.wxss token + common.wxss `c-` 公共类），禁止硬编码色值/字号/间距。
 
 ## 目标
 

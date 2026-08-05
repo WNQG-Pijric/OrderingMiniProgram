@@ -1,6 +1,7 @@
 # 10-admin：小程序管理员端模块
 
 > 前置规则：`docs/prompts/00-project-rule.md`。依赖模块 00 schema、03 menu、05 order、06 wallet、08 chat、09 announcement。
+> 样式规范：前端页面遵循 `docs/design.md`（app.wxss token + common.wxss `c-` 公共类），禁止硬编码色值/字号/间距。
 
 ## 目标
 

@@ -1,6 +1,7 @@
 # 08-chat：订单聊天模块（文字 + 实时推送）
 
 > 前置规则：`docs/prompts/00-project-rule.md`。依赖模块 00 schema、01 auth、05 order。
+> 样式规范：前端页面遵循 `docs/design.md`（app.wxss token + common.wxss `c-` 公共类），禁止硬编码色值/字号/间距。
 >
 > ⚠️ 本模块开发前，需先完成 WSS 合法域名配置（见 README「8.2 部署前置」），便于真机联调实时消息。
 

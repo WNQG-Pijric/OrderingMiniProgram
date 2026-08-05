@@ -1,6 +1,7 @@
 # 07-notify：微信通知模块（订阅消息）
 
 > 前置规则：`docs/prompts/00-project-rule.md`。依赖模块 05 order（状态变更事件）。
+> 样式规范：前端页面遵循 `docs/design.md`（app.wxss token + common.wxss `c-` 公共类），禁止硬编码色值/字号/间距。
 
 ## 目标
 
