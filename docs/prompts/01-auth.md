@@ -30,7 +30,7 @@ GET    /auth/profile      # 当前登录用户信息
 ## 输出物
 
 - AuthModule：Controller / Service / DTO（`@ApiProperty` + class-validator）
-- `JwtStrategy` + `UserGuard`
+- 自定义 `UserGuard`（CanActivate 直解 JWT：无 token → `20001`，token 无效/过期/非 access → `40101`；不再使用 passport/JwtStrategy）
 - 小程序端 `utils/` 封装登录与 token 存储（Storage 持久化，刷新逻辑）——已随 `miniapp/` 骨架交付（`utils/auth.js` / `utils/request.js`）
 - Swagger 注解、单元测试
 
