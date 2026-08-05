@@ -88,17 +88,19 @@ Page({
       .finally(() => this.endValidate());
   },
 
-  /** 单条校验：成功返回 { key, stale, stock }；网络失败（无 code）返回 null */
+  /** 单条校验：成功返回 { key, stale, stock, count }；网络失败（无 code）返回 null */
   checkItem(item) {
+    // count = 校验发起时的数量快照，供合并时比对当前数量（防旧响应覆盖新判定）
+    const count = Number(item.count);
     return request({ url: `/menu/${item.menuId}` })
       .then((menu) => {
         const stock = Number(menu.stock);
-        if (stock < Number(item.count)) return { key: item.key, stale: '库存不足', stock };
-        return { key: item.key, stale: '', stock };
+        if (stock < count) return { key: item.key, stale: '库存不足', stock, count };
+        return { key: item.key, stale: '', stock, count };
       })
       .catch((err) => {
         // 31002 = 菜品不存在/已下架/分类停用 → 标记已下架；网络失败不标记
-        if (err && err.code === 31002) return { key: item.key, stale: '已下架' };
+        if (err && err.code === 31002) return { key: item.key, stale: '已下架', count };
         return null;
       });
   },
@@ -120,6 +122,9 @@ Page({
     const stockMap = Object.assign({}, this.data.stockMap);
     results.forEach((r) => {
       if (!r) return;
+      // 丢弃过期结果：校验发起后数量已变化（如校验中加号），旧响应不得覆盖新判定
+      const current = this.data.items.find((item) => item.key === r.key);
+      if (!current || Number(current.count) !== Number(r.count)) return;
       if (r.stale) staleMap[r.key] = r.stale;
       else delete staleMap[r.key];
       if (r.stock !== undefined) stockMap[r.key] = r.stock;

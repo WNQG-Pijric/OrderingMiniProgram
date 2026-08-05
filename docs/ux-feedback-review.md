@@ -307,6 +307,8 @@ codex 对 10.1 复审给出 **P1 必修 + P2/P3 建议**，全部核对属实并
 
 **验证（Node 模拟，16 项断言全过）**：P1 字符串 "0"/"2"/数字 3 三种 dataset → 选中态、幂等、请求参数全正确；P2 四场景（结算窗口拦截、加号触顶、减量解除标记、已下架拦截、网络失败不阻塞）+ validating 计数复位；P3 连点仅 1 请求、成功关弹层、失败复位。三个 JS 文件 `node --check` 通过；后端未改动。
 
+**独立复审（module-reviewer）抓到 1 个真实竞态（FAIL-1），已修复**：并发校验时旧响应覆盖新判定 —— onShow 的 `validateItems`（count=1）在途时用户加号，`revalidateItem`（count=2）先返回标记「库存不足」，随后 validateItems 旧响应（count=1 判定不超）后到，`delete staleMap[key]` 把标记错误解除、结算拦截在窗口内失效。修复：`checkItem` 返回携带校验时数量快照 `count`，`mergeCheckResults` 合并前比对 `this.data.items` 当前数量，不一致（或条目已删除）则丢弃该条过期结果。模拟复现时序验证：交错返回下旧响应被丢弃、标记保持、结算仍拦截；全部 20 项断言（含竞态 4 项）通过。
+
 ### 9.3 验收标准（合并原 7 条 + 评审 6 条）
 
 1. 管理端：点【全部】正常展示全部菜品、请求参数无 `status=undefined`、无循环报错；筛选切换有选中态；switch 上下架状态与 toast 文案一致（真机）
