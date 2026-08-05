@@ -71,8 +71,8 @@ Page({
 
   /**
    * 校验本地缓存是否过期（04-cart 关键规则：本地缓存可能过期）：
-   * 对每条轻量请求 /menu/:id，下架 →「已下架」，库存小于数量 →「库存不足」。
-   * 校验失败（网络）不阻塞结算，模块 05 仍服务端重算。
+   * 对每条轻量请求 /menu/:id，已下架 →「已下架」（后端抛 31002），
+   * 库存小于数量 →「库存不足」。网络失败不阻塞结算，模块 05 仍服务端重算。
    */
   validateItems() {
     const items = this.data.items;
@@ -80,13 +80,16 @@ Page({
     const checks = items.map((item) =>
       request({ url: `/menu/${item.menuId}` })
         .then((menu) => {
-          if (Number(menu.status) !== 1) return { key: item.key, stale: '已下架' };
           if (Number(menu.stock) < Number(item.count)) {
             return { key: item.key, stale: '库存不足' };
           }
           return { key: item.key, stale: '' };
         })
-        .catch(() => null)
+        .catch((err) => {
+          // 31002 = 菜品不存在/已下架/分类停用 → 标记已下架；网络失败（无 code）不标记
+          if (err && err.code === 31002) return { key: item.key, stale: '已下架' };
+          return null;
+        })
     );
     Promise.all(checks).then((results) => {
       const staleMap = {};
@@ -94,6 +97,8 @@ Page({
         if (r && r.stale) staleMap[r.key] = r.stale;
       });
       this.setData({ staleMap });
+      // 重新渲染，把 stale 标记合并进条目显示（render 基于 staleMap 生成 item.stale）
+      this.render();
     });
   },
 

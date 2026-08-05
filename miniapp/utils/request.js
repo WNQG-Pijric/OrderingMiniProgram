@@ -46,7 +46,10 @@ function request(options) {
           if (body && body.code === 0) {
             resolve(body.data);
           } else {
-            reject(new Error((body && body.message) || '请求失败'));
+            // 挂业务错误码（如 31002 菜品不存在），供调用方区分业务错误与网络失败
+            const err = new Error((body && body.message) || '请求失败');
+            if (body && typeof body.code === 'number') err.code = body.code;
+            reject(err);
           }
         },
         fail: reject,

@@ -36,11 +36,11 @@
 }
 .header__badge {
   position: absolute;
-  top: -8rpx;
-  right: -12rpx;
-  min-width: 32rpx;
-  height: 32rpx;
-  line-height: 32rpx;
+  top: calc(-1 * var(--space-xs));
+  right: calc(-1 * var(--space-sm));
+  min-width: var(--space-2xl);
+  height: var(--space-2xl);
+  line-height: var(--space-2xl);
   padding: 0 var(--space-xs);
   box-sizing: border-box;
   background-color: var(--color-danger);

@@ -232,7 +232,8 @@ Page({
     const payload = {
       categoryId: form.categoryId,
       name: form.name.trim(),
-      image: form.image || undefined,
+      // 空串保留（清图语义）：cleanBody 只剔 undefined，'' 会被后端按清空处理
+      image: form.image,
       price: Number(form.price),
       stock: Number(form.stock) || 0,
       sort: Number(form.sort) || 0,
