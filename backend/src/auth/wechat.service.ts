@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { BizException } from '../common/exceptions/biz.exception';
 import { ErrorCode } from '../common/errors';
@@ -6,6 +6,8 @@ import { ErrorCode } from '../common/errors';
 /** 微信接口封装：小程序 code 换取 openid（code2Session） */
 @Injectable()
 export class WechatService {
+  private readonly logger = new Logger(WechatService.name);
+
   constructor(private readonly config: ConfigService) {}
 
   /**
@@ -39,10 +41,11 @@ export class WechatService {
     }
 
     if (!data.openid) {
-      throw new BizException(
-        ErrorCode.INVALID_CREDENTIALS,
-        data.errmsg ? `登录凭证无效：${data.errmsg}` : '登录凭证无效',
+      // 微信 errmsg 仅记日志，不外泄给前端
+      this.logger.warn(
+        `code2Session 失败：errcode=${data.errcode ?? '-'} errmsg=${data.errmsg ?? '-'}`,
       );
+      throw new BizException(ErrorCode.INVALID_CREDENTIALS, '登录凭证无效');
     }
     return data.openid;
   }

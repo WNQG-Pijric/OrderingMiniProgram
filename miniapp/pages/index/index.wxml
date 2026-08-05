@@ -1,0 +1,17 @@
+<view class="container">
+  <block wx:if="{{user}}">
+    <view class="user">
+      <text class="nickname">{{user.nickname || '微信用户'}}</text>
+      <text class="balance">余额：{{user.balance}}</text>
+    </view>
+  </block>
+  <button
+    wx:else
+    class="login-btn"
+    type="primary"
+    loading="{{loading}}"
+    bindtap="onLogin"
+  >
+    微信登录
+  </button>
+</view>

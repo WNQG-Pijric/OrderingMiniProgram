@@ -80,16 +80,31 @@ describe('Auth (e2e)', () => {
     expect(mockPrisma.user.upsert).toHaveBeenCalled();
   });
 
-  it('GET /auth/profile 未携带 token → 40101', async () => {
+  it('GET /auth/profile 未携带 token → 20001 未登录', async () => {
     const res = await request(app.getHttpServer()).get('/auth/profile');
     expect(res.status).toBe(200);
-    expect(res.body.code).toBe(40101);
+    expect(res.body.code).toBe(20001);
   });
 
   it('GET /auth/profile 携带非法 token → 40101', async () => {
     const res = await request(app.getHttpServer())
       .get('/auth/profile')
       .set('Authorization', 'Bearer not-a-token');
+    expect(res.status).toBe(200);
+    expect(res.body.code).toBe(40101);
+  });
+
+  it('GET /auth/profile 携带 refreshToken（secret/type 不符）→ 40101', async () => {
+    const refreshToken = await jwtService.signAsync(
+      { userId: 1, openid: 'openid-e2e', role: 'USER', type: 'refresh' },
+      {
+        secret: config.getOrThrow<string>('JWT_REFRESH_SECRET'),
+        expiresIn: '7d',
+      },
+    );
+    const res = await request(app.getHttpServer())
+      .get('/auth/profile')
+      .set('Authorization', `Bearer ${refreshToken}`);
     expect(res.status).toBe(200);
     expect(res.body.code).toBe(40101);
   });
