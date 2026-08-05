@@ -13,5 +13,8 @@ fi
 echo "Applying Prisma migrations..."
 npx prisma migrate deploy
 
+echo "Seeding default admin (upsert, existing password untouched)..."
+npx prisma db seed
+
 echo "Starting NestJS..."
 node dist/main
