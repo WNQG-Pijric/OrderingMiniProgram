@@ -157,7 +157,7 @@ describe('AuthService', () => {
   });
 
   describe('profile', () => {
-    it('返回安全字段，不含 openid/deletedAt', async () => {
+    it('返回安全字段，不含 openid/deletedAt，balance 保留两位小数', async () => {
       mockPrisma.user.findUnique.mockResolvedValue(buildUser());
       const profile = await service.profile(1);
       expect(profile.id).toBe(1);
@@ -169,6 +169,22 @@ describe('AuthService', () => {
     it('用户不存在 → 30001', async () => {
       mockPrisma.user.findUnique.mockResolvedValue(null);
       await expect(service.profile(999)).rejects.toMatchObject({
+        response: { code: ErrorCode.USER_NOT_FOUND },
+      });
+    });
+
+    it('禁用用户（status=0）→ 20004', async () => {
+      mockPrisma.user.findUnique.mockResolvedValue(buildUser({ status: 0 }));
+      await expect(service.profile(1)).rejects.toMatchObject({
+        response: { code: ErrorCode.ACCOUNT_DISABLED },
+      });
+    });
+
+    it('软删除用户（deletedAt 非空）→ 30001', async () => {
+      mockPrisma.user.findUnique.mockResolvedValue(
+        buildUser({ deletedAt: new Date('2026-08-05T00:00:00Z') }),
+      );
+      await expect(service.profile(1)).rejects.toMatchObject({
         response: { code: ErrorCode.USER_NOT_FOUND },
       });
     });

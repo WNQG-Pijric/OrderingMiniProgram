@@ -4,6 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import { User } from '@prisma/client';
 import { BizException } from '../common/exceptions/biz.exception';
 import { ErrorCode } from '../common/errors';
+import { formatMoney } from '../common/money';
 import { PrismaService } from '../prisma/prisma.service';
 import { LoginDto } from './dto/login.dto';
 import { JwtPayload } from './jwt-payload.interface';
@@ -70,11 +71,23 @@ export class AuthService {
 
   /** 当前登录用户信息（不含 openid 等敏感字段） */
   async profile(userId: number) {
+    const user = await this.findActiveUser(userId);
+    return this.toSafeUser(user);
+  }
+
+  /**
+   * 活跃用户统一查询：存在（含未软删除）→ 否则 30001；
+   * status=1 正常 → 否则 20004。auth 与 users 模块共用。
+   */
+  async findActiveUser(userId: number): Promise<User> {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
-    if (!user) {
+    if (!user || user.deletedAt) {
       throw new BizException(ErrorCode.USER_NOT_FOUND);
     }
-    return this.toSafeUser(user);
+    if (user.status !== 1) {
+      throw new BizException(ErrorCode.ACCOUNT_DISABLED);
+    }
+    return user;
   }
 
   /** 签发 accessToken（2h）+ refreshToken（7d） */
@@ -98,14 +111,14 @@ export class AuthService {
     }
   }
 
-  /** 剔除敏感字段；balance（Decimal）序列化为字符串，避免浮点误差 */
+  /** 剔除敏感字段；balance 保留两位小数返回 */
   private toSafeUser(user: User) {
     return {
       id: user.id,
       nickname: user.nickname,
       avatar: user.avatar,
       role: user.role,
-      balance: user.balance.toString(),
+      balance: formatMoney(user.balance),
       status: user.status,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,

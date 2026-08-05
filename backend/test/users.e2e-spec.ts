@@ -172,6 +172,26 @@ describe('Users (e2e)', () => {
       expect(res.status).toBe(400);
       expect(res.body.code).toBe(10001);
     });
+
+    it('nickname 传 null → 400 + 10001（拒绝清空字段，不落库）', async () => {
+      const res = await request(app.getHttpServer())
+        .put('/users/profile')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ nickname: null });
+      expect(res.status).toBe(400);
+      expect(res.body.code).toBe(10001);
+      expect(mockPrisma.user.update).not.toHaveBeenCalled();
+    });
+
+    it('avatar 传 null → 400 + 10001', async () => {
+      const res = await request(app.getHttpServer())
+        .put('/users/profile')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ avatar: null });
+      expect(res.status).toBe(400);
+      expect(res.body.code).toBe(10001);
+      expect(mockPrisma.user.update).not.toHaveBeenCalled();
+    });
   });
 
   describe('GET /users/wallet', () => {
