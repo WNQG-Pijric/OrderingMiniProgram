@@ -1,0 +1,68 @@
+<view class="page">
+  <!-- 基本信息 -->
+  <view class="section">
+    <view class="field">
+      <text class="label">菜品名称</text>
+      <input class="input" placeholder="必填" value="{{form.name}}" data-field="name" bindinput="onInput" />
+    </view>
+    <view class="field">
+      <text class="label">所属分类</text>
+      <picker range="{{categoryNames}}" value="{{categoryIndex}}" bindchange="onCategoryChange">
+        <view class="picker {{categoryIndex === 0 && !form.categoryId ? 'placeholder' : ''}}">
+          {{form.categoryId ? categoryNames[categoryIndex] : '请选择分类'}}
+        </view>
+      </picker>
+    </view>
+    <view class="field">
+      <text class="label">基础价（元）</text>
+      <input class="input" type="digit" placeholder="必填，最多两位小数" value="{{form.price}}" data-field="price" bindinput="onInput" />
+    </view>
+    <view class="field">
+      <text class="label">库存</text>
+      <input class="input" type="number" placeholder="默认 0" value="{{form.stock}}" data-field="stock" bindinput="onInput" />
+    </view>
+    <view class="field">
+      <text class="label">排序</text>
+      <input class="input" type="number" placeholder="越小越靠前" value="{{form.sort}}" data-field="sort" bindinput="onInput" />
+    </view>
+    <view class="field">
+      <text class="label">上架状态</text>
+      <switch checked="{{status === 1}}" color="#ff9f43" bindchange="onStatusChange" />
+    </view>
+  </view>
+
+  <!-- 菜品图片 -->
+  <view class="section">
+    <text class="section-title">菜品图片</text>
+    <view class="image-box">
+      <image wx:if="{{form.image}}" class="preview" src="{{form.image}}" mode="aspectFill" />
+      <view wx:elif="{{form.uploading}}" class="preview uploading">上传中...</view>
+      <view wx:else class="preview empty" bindtap="onChooseImage">+ 上传图片</view>
+      <text wx:if="{{form.image}}" class="remove-img" bindtap="onRemoveImage">移除</text>
+    </view>
+  </view>
+
+  <!-- 规格配置 -->
+  <view class="section">
+    <view class="section-head">
+      <text class="section-title">规格配置（可选）</text>
+      <text class="add-group" bindtap="onAddGroup">+ 添加规格组</text>
+    </view>
+    <text class="section-desc">如：甜度（全糖/半糖）、温度（少冰/去冰）。选中规格项价格 = 基础价 + 加价。</text>
+
+    <view wx:for="{{specGroups}}" wx:key="index" wx:for-item="group" wx:for-index="gIdx" class="group">
+      <view class="group-head">
+        <input class="input group-name" placeholder="规格组名称（如：甜度）" value="{{group.name}}" data-idx="{{gIdx}}" bindinput="onGroupInput" />
+        <text class="remove-group" data-idx="{{gIdx}}" bindtap="onRemoveGroup">删除组</text>
+      </view>
+      <view wx:for="{{group.items}}" wx:key="index" wx:for-item="item" wx:for-index="iIdx" class="item-row">
+        <input class="input item-name" placeholder="规格项（如：半糖）" value="{{item.name}}" data-g-idx="{{gIdx}}" data-i-idx="{{iIdx}}" data-field="name" bindinput="onItemInput" />
+        <input class="input item-price" type="digit" placeholder="加价" value="{{item.priceDelta}}" data-g-idx="{{gIdx}}" data-i-idx="{{iIdx}}" data-field="priceDelta" bindinput="onItemInput" />
+        <text class="remove-item" data-g-idx="{{gIdx}}" data-i-idx="{{iIdx}}" bindtap="onRemoveItem">×</text>
+      </view>
+      <text class="add-item" data-idx="{{gIdx}}" bindtap="onAddItem">+ 添加规格项</text>
+    </view>
+  </view>
+
+  <button class="save-btn" bindtap="onSave">保存</button>
+</view>

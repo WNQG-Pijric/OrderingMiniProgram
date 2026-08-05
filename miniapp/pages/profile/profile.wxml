@@ -20,6 +20,12 @@
     <text class="arrow">余额 ¥{{user.balance || '0.00'}} ›</text>
   </view>
 
+  <!-- 管理员入口（模块 03：菜单 / 分类管理） -->
+  <view class="menu" bindtap="goAdmin">
+    <text>管理员端</text>
+    <text class="arrow">菜单 / 分类管理 ›</text>
+  </view>
+
   <!-- 查看态：编辑按钮 -->
   <button
     wx:if="{{!editing}}"

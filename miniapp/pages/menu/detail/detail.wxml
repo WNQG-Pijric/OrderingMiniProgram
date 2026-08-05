@@ -1,0 +1,47 @@
+<view class="page" wx:if="{{menu}}">
+  <!-- 菜品信息 -->
+  <view class="menu-header">
+    <image wx:if="{{menu.image}}" class="menu-img" src="{{menu.image}}" mode="aspectFill" />
+    <view wx:else class="menu-img placeholder"></view>
+    <view class="menu-title">
+      <text class="menu-name">{{menu.name}}</text>
+      <text wx:if="{{menu.description}}" class="menu-desc">{{menu.description}}</text>
+      <text class="menu-price">¥{{menu.price}}</text>
+    </view>
+  </view>
+
+  <!-- 规格选择：每组单选一项 -->
+  <view class="spec-section">
+    <view wx:for="{{menu.specGroups}}" wx:key="id" wx:for-item="group" class="spec-group">
+      <text class="spec-group-name">{{group.name}}</text>
+      <view class="spec-items">
+        <view
+          wx:for="{{group.items}}"
+          wx:key="id"
+          wx:for-item="item"
+          class="spec-item {{selections[group.id] === item.id ? 'active' : ''}}"
+          data-group-id="{{group.id}}"
+          data-item-id="{{item.id}}"
+          bindtap="onSpecTap"
+        >
+          <text>{{item.name}}</text>
+          <text wx:if="{{item.priceDelta !== '0.00'}}" class="spec-price">+¥{{item.priceDelta}}</text>
+        </view>
+      </view>
+    </view>
+    <view wx:if="{{!menu.specGroups || menu.specGroups.length === 0}}" class="no-spec">
+      无规格，直接购买
+    </view>
+  </view>
+
+  <!-- 底部固定栏：数量 + 总价 + 加入购物车 -->
+  <view class="footer">
+    <view class="count-box">
+      <view class="count-btn {{count <= 1 ? 'disabled' : ''}}" bindtap="onMinus">-</view>
+      <text class="count">{{count}}</text>
+      <view class="count-btn" bindtap="onPlus">+</view>
+    </view>
+    <text class="total">¥{{totalPrice}}</text>
+    <view class="cart-btn" bindtap="addToCart">加入购物车</view>
+  </view>
+</view>

@@ -1,8 +1,13 @@
 {
   "pages": [
     "pages/index/index",
+    "pages/menu/detail/detail",
     "pages/profile/profile",
-    "pages/wallet/wallet"
+    "pages/wallet/wallet",
+    "pages/admin/login/login",
+    "pages/admin/menu/menu",
+    "pages/admin/menu-edit/menu-edit",
+    "pages/admin/category/category"
   ],
   "window": {
     "navigationBarTitleText": "点餐",

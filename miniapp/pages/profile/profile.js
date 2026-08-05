@@ -46,6 +46,15 @@ Page({
     wx.navigateTo({ url: '/pages/wallet/wallet' });
   },
 
+  /** 管理员端入口：未登录跳登录页，已登录跳菜单管理 */
+  goAdmin() {
+    wx.navigateTo({
+      url: require('../../utils/admin').getAdminToken()
+        ? '/pages/admin/menu/menu'
+        : '/pages/admin/login/login',
+    });
+  },
+
   /** 进入编辑模式 */
   startEdit() {
     this.setData({

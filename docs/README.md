@@ -759,9 +759,11 @@ POST   /admin/users/:id/recharge # 管理员赠送余额
 POST   /admin/users/:id/disable  # 禁用用户
 GET    /admin/stats
 GET    /admin/cos/sts            # 获取 COS 临时密钥（图片直传）
+GET    /admin/menu               # 管理端菜品列表（含下架，分页 + 状态/关键字过滤）
 POST   /admin/menu
 PUT    /admin/menu/:id
 DELETE /admin/menu/:id
+GET    /admin/category           # 管理端分类列表（含停用）
 POST   /admin/category
 PUT    /admin/category/:id
 DELETE /admin/category/:id

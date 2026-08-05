@@ -1,0 +1,42 @@
+<view class="page">
+  <!-- 筛选 + 操作 -->
+  <view class="toolbar">
+    <view class="filters">
+      <view class="filter {{status === '' ? 'active' : ''}}" data-status="" bindtap="onFilterTap">全部</view>
+      <view class="filter {{status === 1 ? 'active' : ''}}" data-status="1" bindtap="onFilterTap">上架</view>
+      <view class="filter {{status === 0 ? 'active' : ''}}" data-status="0" bindtap="onFilterTap">下架</view>
+    </view>
+    <view class="ops">
+      <text class="link-btn" bindtap="goCategory">分类管理</text>
+      <button class="add-btn" bindtap="onAdd">新增菜品</button>
+    </view>
+  </view>
+
+  <view wx:if="{{loading && list.length === 0}}" class="tip">加载中...</view>
+  <view wx:elif="{{list.length === 0}}" class="tip">暂无菜品</view>
+
+  <view class="list">
+    <view wx:for="{{list}}" wx:key="id" class="item">
+      <image wx:if="{{item.image}}" class="img" src="{{item.image}}" mode="aspectFill" />
+      <view wx:else class="img placeholder"></view>
+      <view class="info">
+        <text class="name {{item.status === 0 ? 'disabled' : ''}}">{{item.name}}</text>
+        <text class="meta">¥{{item.price}} · 库存 {{item.stock}} · 销量 {{item.sales}}</text>
+        <text wx:if="{{item.specGroups.length > 0}}" class="spec">{{item.specGroups.length}} 组规格</text>
+      </view>
+      <view class="ops">
+        <switch
+          checked="{{item.status === 1}}"
+          color="#ff9f43"
+          data-id="{{item.id}}"
+          data-status="{{item.status}}"
+          bindchange="onToggleStatus"
+        />
+        <text class="op-btn" data-id="{{item.id}}" bindtap="onEdit">编辑</text>
+        <text class="op-btn danger" data-id="{{item.id}}" data-name="{{item.name}}" bindtap="onDelete">删除</text>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{!hasMore && list.length > 0}}" class="end-tip">没有更多了</view>
+</view>

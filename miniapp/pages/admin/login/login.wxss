@@ -1,0 +1,34 @@
+/* 管理员登录 */
+.page {
+  min-height: 100vh;
+  background: #f5f5f5;
+  padding: 160rpx 64rpx;
+}
+
+.logo {
+  text-align: center;
+  font-size: 44rpx;
+  font-weight: 600;
+  margin-bottom: 80rpx;
+}
+
+.form {
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 48rpx 40rpx;
+}
+
+.input {
+  border: 1rpx solid #ddd;
+  border-radius: 12rpx;
+  padding: 20rpx 24rpx;
+  margin-bottom: 32rpx;
+  font-size: 30rpx;
+}
+
+.login-btn {
+  background: #ff9f43;
+  color: #fff;
+  border-radius: 44rpx;
+  font-size: 32rpx;
+}

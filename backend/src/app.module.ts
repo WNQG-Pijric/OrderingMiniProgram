@@ -1,8 +1,11 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { AdminModule } from './admin/admin.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
+import { CosModule } from './cos/cos.module';
+import { MenuModule } from './menu/menu.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { UsersModule } from './user/user.module';
 
@@ -13,6 +16,9 @@ import { UsersModule } from './user/user.module';
     PrismaModule,
     AuthModule,
     UsersModule,
+    AdminModule,
+    CosModule,
+    MenuModule,
   ],
   controllers: [AppController],
   providers: [AppService],
