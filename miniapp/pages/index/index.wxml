@@ -2,7 +2,10 @@
   <!-- 顶部：标题 + 个人中心入口 -->
   <view class="header">
     <text class="header__title">点餐</text>
-    <text class="header__entry" bindtap="goProfile">我的</text>
+    <view class="header__entries">
+      <text class="header__entry" bindtap="goCart">购物车</text>
+      <text class="header__entry" bindtap="goProfile">我的</text>
+    </view>
   </view>
 
   <!-- 公告位：模块 09 首页顶部展示 -->

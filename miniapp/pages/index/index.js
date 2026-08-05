@@ -60,4 +60,9 @@ Page({
   goProfile() {
     wx.navigateTo({ url: '/pages/profile/profile' });
   },
+
+  /** 购物车 */
+  goCart() {
+    wx.navigateTo({ url: '/pages/cart/cart' });
+  },
 });

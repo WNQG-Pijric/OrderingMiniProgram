@@ -10,24 +10,46 @@ Page({
     totalPrice: '0.00',
     unitPrice: '0.00', // 单价 = 基础价 + 规格加价（购物车存此值）
     specText: '', // 已选规格文本快照（如：甜度/半糖 温度/少冰）
+    isEdit: false, // 从购物车进入的改规格模式
   },
 
   onLoad(options) {
     this.menuId = Number(options.id);
+    this.isEdit = options.edit === '1';
+    if (this.isEdit) {
+      this.editItem = cart.getEditItem();
+      if (!this.editItem || Number(this.editItem.menuId) !== this.menuId) {
+        this.editItem = null;
+        this.isEdit = false;
+      }
+    }
     this.loadDetail();
   },
 
-  /** 拉取菜品详情，默认每个规格组选第一项 */
+  /** 拉取菜品详情；编辑模式按原购物车规格回显，否则默认每组第一项 */
   loadDetail() {
     request({ url: `/menu/${this.menuId}` })
       .then((menu) => {
         const selections = {};
+        const editSpecIds = this.editItem ? this.editItem.specIds || [] : [];
         (menu.specGroups || []).forEach((g) => {
           if (g.items && g.items.length) {
-            selections[g.id] = g.items[0].id;
+            const activeItems = g.items;
+            const editItem = activeItems.find((item) =>
+              editSpecIds.includes(item.id)
+            );
+            selections[g.id] = (editItem || activeItems[0]).id;
           }
         });
-        this.setData({ menu, selections });
+        this.setData({
+          menu,
+          selections,
+          count:
+            this.isEdit && this.editItem
+              ? Math.max(1, Number(this.editItem.count) || 1)
+              : 1,
+          isEdit: this.isEdit,
+        });
         this.calcPrice();
       })
       .catch((err) => {
@@ -78,24 +100,31 @@ Page({
     });
   },
 
-  /** 加入购物车（本地缓存；购物车模块 04 使用） */
+  /** 加入购物车 / 保存规格修改（本地缓存；下单金额以服务端重算为准） */
   addToCart() {
     const { menu, selections, count } = this.data;
     if (!menu) return;
-    const specItemIds = (menu.specGroups || [])
+    const specIds = (menu.specGroups || [])
       .map((g) => selections[g.id])
       .filter(Boolean);
-    cart.add({
+    const item = {
       menuId: menu.id,
       menuName: menu.name,
       image: menu.image,
-      specItemIds,
+      specIds,
       specText: this.data.specText,
       count,
-      // 单价 = 基础价 + 规格加价（下单金额以服务端重算为准）
-      price: this.data.unitPrice,
-    });
-    wx.showToast({ title: '已加入购物车', icon: 'success' });
+      unitPrice: this.data.unitPrice,
+      remark: this.editItem && this.editItem.remark ? this.editItem.remark : '',
+    };
+    if (this.editItem) {
+      cart.updateItem(this.editItem.menuId, this.editItem.specIds, item);
+      cart.clearEditItem();
+      wx.showToast({ title: '已保存修改', icon: 'success' });
+    } else {
+      cart.addItem(item);
+      wx.showToast({ title: '已加入购物车', icon: 'success' });
+    }
     setTimeout(() => wx.navigateBack(), 600);
   },
 });

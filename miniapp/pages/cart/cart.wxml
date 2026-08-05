@@ -1,0 +1,64 @@
+<view class="page">
+  <view wx:if="{{!hasItems}}" class="cart-empty">
+    <view class="c-empty">
+      <text>购物车还是空的</text>
+      <text class="cart-empty__sub">去首页挑点喜欢的</text>
+    </view>
+    <view class="c-btn c-btn--primary c-btn--block cart-empty__btn" bindtap="goHome">去点餐</view>
+  </view>
+
+  <block wx:else>
+    <view class="cart-list">
+      <view class="cart-item c-card" wx:for="{{items}}" wx:key="key">
+        <view
+          class="cart-item__check {{item.checked ? 'cart-item__check--checked' : ''}}"
+          data-key="{{item.key}}"
+          bindtap="onToggleItem"
+        >✓</view>
+        <image
+          wx:if="{{item.image}}"
+          class="cart-item__img"
+          src="{{item.image}}"
+          mode="aspectFill"
+        />
+        <view wx:else class="cart-item__img cart-item__img--placeholder"></view>
+        <view class="cart-item__info">
+          <text class="cart-item__name c-ellipsis">{{item.menuName}}</text>
+          <text wx:if="{{item.specText}}" class="cart-item__spec c-ellipsis">{{item.specText}}</text>
+          <view class="cart-item__bottom">
+            <text class="c-price">{{item.unitPrice}}</text>
+            <view class="stepper">
+              <view
+                class="stepper__btn {{item.count <= 1 ? 'stepper__btn--disabled' : ''}}"
+                data-key="{{item.key}}"
+                bindtap="onMinus"
+              >-</view>
+              <text class="stepper__num">{{item.count}}</text>
+              <view class="stepper__btn" data-key="{{item.key}}" bindtap="onPlus">+</view>
+            </view>
+          </view>
+          <view class="cart-item__actions">
+            <text class="cart-item__action" data-key="{{item.key}}" bindtap="onEditSpec">改规格</text>
+            <text class="cart-item__action cart-item__action--danger" data-key="{{item.key}}" bindtap="onRemove">删除</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="clear-entry">
+      <text bindtap="onClear">清空购物车</text>
+    </view>
+
+    <view class="footer">
+      <view class="footer__left" bindtap="onToggleAll">
+        <view class="footer__check {{allChecked ? 'footer__check--checked' : ''}}">✓</view>
+        <text class="footer__all-text">全选</text>
+      </view>
+      <view class="footer__total">
+        <text class="footer__total-label">合计</text>
+        <text class="c-price footer__total-price">{{totalPrice}}</text>
+      </view>
+      <view class="c-btn c-btn--primary footer__checkout" bindtap="onCheckout">结算({{selectedCount}})</view>
+    </view>
+  </block>
+</view>

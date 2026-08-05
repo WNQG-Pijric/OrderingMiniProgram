@@ -18,6 +18,11 @@
   font-weight: 600;
   color: var(--text-primary);
 }
+.header__entries {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
 .header__entry {
   font-size: var(--font-size-body);
   color: var(--color-primary);

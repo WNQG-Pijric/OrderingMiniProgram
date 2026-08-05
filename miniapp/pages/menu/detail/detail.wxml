@@ -42,6 +42,6 @@
       <view class="count-btn" bindtap="onPlus">+</view>
     </view>
     <text class="c-price footer__total">{{totalPrice}}</text>
-    <view class="c-btn c-btn--primary footer__cart" bindtap="addToCart">加入购物车</view>
+    <view class="c-btn c-btn--primary footer__cart" bindtap="addToCart">{{isEdit ? '保存修改' : '加入购物车'}}</view>
   </view>
 </view>

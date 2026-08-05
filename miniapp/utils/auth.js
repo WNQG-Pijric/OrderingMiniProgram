@@ -3,6 +3,7 @@ const { BASE_URL } = require('./config');
 
 const TOKEN_KEY = 'access_token';
 const REFRESH_KEY = 'refresh_token';
+const USER_KEY = 'current_user';
 
 /** 读取 accessToken */
 function getToken() {
@@ -12,6 +13,24 @@ function getToken() {
 /** 读取 refreshToken */
 function getRefreshToken() {
   return wx.getStorageSync(REFRESH_KEY) || null;
+}
+
+/** 保存当前登录用户（购物车按 userId 隔离需要） */
+function saveUser(user) {
+  if (user && user.id) {
+    wx.setStorageSync(USER_KEY, user);
+  }
+}
+
+/** 读取当前登录用户 */
+function getCurrentUser() {
+  return wx.getStorageSync(USER_KEY) || null;
+}
+
+/** 读取当前用户 ID；未登录返回 null */
+function getUserId() {
+  const user = getCurrentUser();
+  return user && user.id ? user.id : null;
 }
 
 /** 保存令牌（access + refresh） */
@@ -24,6 +43,7 @@ function saveTokens(accessToken, refreshToken) {
 function clearTokens() {
   wx.removeStorageSync(TOKEN_KEY);
   wx.removeStorageSync(REFRESH_KEY);
+  wx.removeStorageSync(USER_KEY);
 }
 
 /**
@@ -46,6 +66,7 @@ function login() {
             const body = resp.data;
             if (body && body.code === 0) {
               saveTokens(body.data.accessToken, body.data.refreshToken);
+              saveUser(body.data.user);
               resolve(body.data.user);
             } else {
               reject(new Error((body && body.message) || '登录失败'));
@@ -94,6 +115,9 @@ module.exports = {
   refresh,
   getToken,
   getRefreshToken,
+  saveUser,
+  getCurrentUser,
+  getUserId,
   saveTokens,
   clearTokens,
 };
