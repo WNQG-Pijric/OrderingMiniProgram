@@ -8,21 +8,25 @@
 
 - 小程序端：原生微信小程序（体验版）
 - 后端：NestJS + TypeScript + Prisma + MySQL 8
-- 管理后台：Vue3 + Vite + Element Plus（仅管理员使用）
+- 管理端：同一微信小程序内权限隔离（无独立 Web 后台）
 - 文件存储：腾讯云 COS（临时密钥直传）
 - 部署：微信云托管（CloudRun），无自建服务器 / 无域名 / 无备案
 - 支付：虚拟货币（余额），充值方式为管理员后台赠送，**无微信支付**
+- 聊天：按订单文字会话，实时推送
+- 公告：小程序首页顶部展示
 
 ## 二、技术栈与目录结构
 
 ```
 restaurant-system/
     miniapp/                  # 原生微信小程序
+        pages/admin/          # 管理员端页面（权限隔离）
+        pages/chat/           # 聊天页面
+        pages/announcement/   # 公告页面
     backend/                  # NestJS 后端（端口 3000）
-        src/auth/ user/ menu/ order/ payment/ notify/ admin/
+        src/auth/ user/ menu/ order/ payment/ notify/ chat/ announcement/ admin/
         prisma/
         Dockerfile
-    admin-web/                # Vue3 管理后台
     docs/                     # 文档与 AI 知识库
     database/                 # 由 Prisma 迁移生成
 ```
@@ -55,6 +59,9 @@ restaurant-system/
 4. **余额并发**：扣款 / 退款回补使用 `SELECT ... FOR UPDATE` 行锁（或 version 乐观锁），余额不足返回 `40001`，不做部分扣款。
 5. **事务一致性**：下单 + 扣款 + 写流水必须在同一事务内，任一步失败整体回滚。
 6. **Secret 安全**：AppSecret、JWT_SECRET 等只存后端环境变量，绝不进入小程序代码 / 前端。
+7. **管理员端同一个小程序**：用户端与管理员端按角色权限隔离展示，所有 `/admin/*` 接口必须走 `AdminGuard`。
+8. **聊天实时**：聊天为按订单维度的文字消息，实时推送；消息与未读状态必须持久化。
+9. **公告首页展示**：公告由管理员发布，首页顶部展示当前启用的公告。
 
 ## 五、编码规范
 
@@ -94,7 +101,7 @@ docs(api): 更新 Swagger
 2. Module / Controller / Service / DTO
 3. Swagger 注解（接口文档）
 4. 单元测试 + 集成测试
-5. 前端页面（小程序或管理后台）
+5. 前端页面（小程序用户端或小程序内管理员端）
 6. 更新对应 API 文档
 
 ---

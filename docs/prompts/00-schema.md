@@ -20,6 +20,7 @@ NestJS、Prisma、MySQL 8（utf8mb4）。
 - 含 `created_at` / `updated_at`；核心表含软删除 `deleted_at`（`DateTime?`，非空即已删除）。
 - 金额一律 `Decimal @db.Decimal(10,2)`，禁止 Float。
 - `status` 字段严格按 README 用 `Int`（TINYINT，0/1）表示，不建枚举（0=禁用/停用/下架，1=正常/启用/上架）。
+- `chat_message` 为追加写表，仅含 `created_at`。
 
 ### 1. admin（管理员）
 
@@ -29,6 +30,7 @@ NestJS、Prisma、MySQL 8（utf8mb4）。
 | username | String UNIQUE | 登录名 |
 | password | String | bcrypt 哈希 |
 | nickname | String? | 昵称 |
+| wechat_openid | String? UNIQUE | 微信订阅消息绑定（管理员在小程序内接收通知） |
 | status | Int（0禁用 1正常） | 建议枚举 |
 | created_at / updated_at | DateTime | |
 
@@ -151,6 +153,47 @@ NestJS、Prisma、MySQL 8（utf8mb4）。
 
 索引：`INDEX (user_id)`、`INDEX (order_id)`。
 
+### 10. chat_conversation（订单会话）
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| id | 自增 | 主键 |
+| order_id | FK → order，UNIQUE | 一个订单一个会话 |
+| user_id | FK → user | 所属用户 |
+| last_message_at | DateTime? | 最后一条消息时间 |
+| user_unread_count | Int 默认 0 | 用户未读数 |
+| admin_unread_count | Int 默认 0 | 管理员未读数 |
+| created_at / updated_at | DateTime | |
+
+索引：`UNIQUE (order_id)`、`INDEX (user_id)`、`INDEX (updated_at)`。
+
+### 11. chat_message（聊天消息）
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| id | 自增 | 主键 |
+| conversation_id | FK → chat_conversation | 所属会话 |
+| sender_role | 枚举 | user(用户) / admin(管理员) |
+| content | String / Text | 文字消息 |
+| read_at | DateTime? | 已读时间 |
+| created_at | DateTime | 追加写表 |
+
+索引：`INDEX (conversation_id, created_at)`。
+
+### 12. announcement（公告）
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| id | 自增 | 主键 |
+| title | String | 标题 |
+| content | Text | 正文 |
+| status | Int（0下线 1发布） | |
+| sort | Int 默认 0 | 排序 |
+| published_at | DateTime? | 发布时间 |
+| created_at / updated_at | DateTime | |
+
+索引：`INDEX (status, published_at)`。
+
 ## 要求
 
 - `status` 类字段用 `Int`（TINYINT，0/1）严格对齐 README；`role` / 订单状态 / 流水类型等多值字段用枚举表达，并注释 0/1 语义。
@@ -158,6 +201,7 @@ NestJS、Prisma、MySQL 8（utf8mb4）。
 - `DATABASE_URL` 通过 `.env` / 环境变量注入（云托管内网 MySQL）。
 - 生成迁移后执行 `prisma migrate dev`，确认迁移可应用。
 - 初始化 `seed` 脚本（可选）：创建默认管理员账号（bcrypt 加密）。
+- 模块 00 已落地后，新增表 / 字段必须通过新迁移实现，不得改写已应用的 init 迁移。
 
 ## 验收标准
 

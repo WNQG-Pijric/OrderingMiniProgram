@@ -1,10 +1,10 @@
-# 09-dashboard：数据统计模块
+# 11-dashboard：数据统计模块
 
-> 前置规则：`docs/prompts/00-project-rule.md`。依赖模块 00 schema、05 order、08 admin。
+> 前置规则：`docs/prompts/00-project-rule.md`。依赖模块 00 schema、05 order、10 admin。
 
 ## 目标
 
-后台仪表盘数据统计：今日订单、营业额、用户数、热销商品。
+小程序管理员端仪表盘数据统计：今日订单、营业额、用户数、热销商品。
 
 ## 数据表
 
@@ -29,7 +29,7 @@ GET /admin/stats/trend           # 近 7 天订单 / 营业额趋势
 ## 输出物
 
 - DashboardModule / StatsService（聚合查询）
-- 后台仪表盘页面（图表可用 ECharts）
+- 小程序内管理员端仪表盘页面（图表可用 ECharts）
 - Swagger 注解、单元测试
 
 ## 验收标准

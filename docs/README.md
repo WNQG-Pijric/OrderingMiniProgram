@@ -1,6 +1,6 @@
 # 微信点餐小程序开发方案（AI Coding 版本）
 
-> Version: v1.3
+> Version: v1.4
 >
 > 开发模式：AI Coding（需求驱动 + 模块化开发）
 >
@@ -20,6 +20,15 @@
 6. **全篇统一各模块「目标 / 数据表 / 接口 / 关键规则」结构**，提升 AI 可读性与可执行性。
 
 > 本版沿用 v1.2 已确认的设计：菜品规格系统、订单快照、退款闭环、并发控制、admin 独立账号、Token 刷新等。
+
+## 修订说明（v1.4，相对 v1.3）
+
+1. **管理员端改为同一小程序内操作**：取消独立 Vue3 管理后台，改为原生小程序内权限隔离展示管理员界面。
+2. **新增订单聊天模块**：按订单会话、仅文字、实时推送。
+3. **新增公告模块**：管理员发布公告，首页顶部展示。
+4. **扩展微信通知**：除用户订单通知外，管理员通过微信订阅消息接收新订单与取消订单通知。
+5. **明确订单取消规则**：用户取消订单不设时限，取消后通知管理员；管理员确认订单后直接进入“制作中”。
+6. **数据库新增聊天、公告相关表**：`chat_conversation`、`chat_message`、`announcement`，`admin` 增加微信绑定字段。
 
 ---
 
@@ -47,6 +56,8 @@
 - 后台管理
 - 权限管理（普通用户 / 管理员）
 - 管理员赠送余额（充值方式）
+- 按订单文字聊天（实时推送）
+- 小程序内置公告
 
 ## 1.2 核心决策
 
@@ -58,6 +69,7 @@
 | 部署方式 | **微信云托管（CloudRun）** | 默认 HTTPS 域名免备案，无需服务器 / 域名 |
 | 开发方式 | 完全 AI Coding | 模块化逐个开发，见 AI Coding 规范 |
 | 支付方式 | 虚拟货币（余额），管理员赠送 | 避开微信支付及 iOS 虚拟支付合规 |
+| 管理员端 | 同一微信小程序内权限隔离 | 不再单独开发 Vue 管理后台，减少部署与维护成本 |
 
 ---
 
@@ -72,15 +84,21 @@
    ├── 主容器：NestJS（端口 3000）
    └── 附属容器：MySQL 8（挂载云硬盘，持久化）
          │
-         ├── 管理后台 Vue3 → 云开发静态托管（免备案域名）/ 本机运行
+         ├── 管理员端：同一小程序内权限隔离（无独立 Web 后台）
          └── 菜品图片 → 腾讯云 COS（临时密钥直传）
+
+小程序端同时包含用户端和管理员端：
+
+- 普通用户：点菜 / 购物车 / 聊天 / 我的。
+- 管理员：订单 / 菜单 / 用户 / 公告 / 聊天，通过角色权限隔离展示。
+- 聊天实时推送使用 WSS 通道，云托管默认 HTTPS 域名同时支持 WSS。
 ```
 
 架构说明：
 
 - **无自建服务器、无域名、无备案**：全部依赖微信云开发生态的免备案能力。
 - **Redis**：初期不引入；如后续需要缓存 / 限流，以云托管附属容器方式添加。
-- **管理后台**：默认放云开发静态托管；仅管理员使用时也可只在本机运行。
+- **管理员端**：与用户端同一个小程序、同一次发布，通过权限隔离展示，不再单独部署 Web 后台。
 
 ---
 
@@ -93,7 +111,7 @@
 | 数据库 | **MySQL 8** | 方案既定，运行于云托管附属容器 |
 | ORM | **Prisma** | AI Coding 支持最好；迁移与类型安全 |
 | 缓存 | **Redis（初期不引入）** | 5~10 人规模不需要；按需后加 |
-| 管理后台 | **Vue3 + Vite + Element Plus** | AI 生成稳定 |
+| 管理端 | **原生微信小程序（管理员角色页面）** | 与用户端同包发布，权限隔离，减少一套前端 |
 | 文件存储 | **腾讯云 COS** | 云开发生态内；临时密钥直传，免备案 |
 | 部署 | **微信云托管（CloudRun）** | 免备案默认域名；个人规模费用极低 |
 | 发布 | **体验版（不审核不发布）** | 5~10 人内部使用，免类目 / 资质 |
@@ -109,6 +127,9 @@ restaurant-system/
 
     miniapp/                  # 原生微信小程序
         pages/
+            admin/            # 管理员端页面（权限隔离）
+            chat/             # 聊天会话与详情
+            announcement/     # 公告展示
         components/
         utils/
         api/
@@ -121,15 +142,11 @@ restaurant-system/
             order/
             payment/
             notify/
+            chat/
+            announcement/
             admin/
         prisma/
         Dockerfile
-
-    admin-web/                # Vue3 管理后台
-        src/
-            views/
-            api/
-            router/
 
     docs/                     # 文档与 AI 知识库
     database/                 # 由 Prisma 迁移生成
@@ -162,9 +179,11 @@ restaurant-system/
   | 端 | 登录方式 | 令牌 | 守卫 |
   |---|---|---|---|
   | 小程序用户 | 微信登录 | user JWT | UserGuard |
-  | 管理后台 | 账号密码（bcrypt） | admin JWT | AdminGuard |
+  | 小程序管理员端 | 账号密码（bcrypt） | admin JWT | AdminGuard |
 
 - **关键规则**：管理员账号存独立 `admin` 表，不复用微信用户。
+- 管理员与用户使用同一个小程序，前端按角色渲染不同界面；后端接口仍通过 `UserGuard` / `AdminGuard` 做权限隔离。
+- 管理员需绑定 `wechat_openid`，用于接收微信订阅消息；绑定通过 `POST /admin/auth/bind-openid` 完成（管理员登录后，把当前登录微信的 openid 写入 `admin.wechat_openid`）。
 
 ## 5.3 菜单与规格模块
 
@@ -203,6 +222,8 @@ restaurant-system/
   - 服务端按 `menu_id + 规格项 id` 重算总价，**不信任客户端金额**。
   - 校验上架状态与库存。
   - `client_order_no` 唯一约束实现幂等，防重复扣款。
+  - 管理员确认订单后直接进入“制作中”，不新增独立确认状态。
+  - 用户取消订单不设时限；已支付订单取消自动退款，并通知管理员。
 
 ## 5.6 订单备注
 
@@ -225,28 +246,58 @@ restaurant-system/
 
 ## 5.8 微信通知
 
-- **目标**：订单状态变更通知。
-- **模板**：下单成功 / 订单完成 / 退款通知。
+- **目标**：用户与管理员双向的订单状态通知。
+- **用户模板**：下单成功 / 制作中 / 订单完成 / 退款通知。
+- **管理员模板**：新订单通知 / 订单取消通知。
 - **关键规则**：
   - 订阅消息默认为**一次性**，下单前引导 `wx.requestSubscribeMessage` 订阅。
+  - 管理员在小程序内完成订阅授权后，通过微信订阅消息接收新订单与取消订单通知。
   - 个人主体可申请的点餐类模板有限；申请不到时**降级为订单页轮询状态**。
+  - 发送失败不影响订单主流程，通知异常仅记录日志。
 
-## 5.9 后台管理
+## 5.9 管理员端（小程序内）
 
-- **目标**：菜单 / 分类 / 规格 / 订单 / 用户 / 统计管理。
+- **目标**：小程序内管理员端，覆盖菜单 / 分类 / 规格 / 订单 / 用户 / 公告 / 聊天 / 统计管理。
 - **接口**：
   - `POST /admin/auth/login`（账号密码）
-  - `GET /admin/orders`、`POST /admin/orders/:id/complete`、`/cancel`
+  - `GET /admin/orders`、`POST /admin/orders/:id/confirm`（确认进入制作中）、`POST /admin/orders/:id/complete`、`/cancel`
   - `GET /admin/users`、`POST /admin/users/:id/recharge`（赠送余额）、`/disable`
   - `POST / PUT / DELETE /admin/menu`、`/admin/category`
+  - `POST / PUT / DELETE /admin/announcements`
+  - `GET /admin/chats`、`POST /admin/chats/:id/messages`
   - `GET /admin/stats`
-- **页面**：登录、仪表盘、菜单管理（含规格）、分类管理、订单管理、用户管理（含赠送余额）、数据统计、系统设置。
+- **页面**：登录、仪表盘、菜单管理（含规格）、分类管理、订单管理、用户管理（含赠送余额）、公告管理、聊天管理、数据统计、系统设置。
+- **关键规则**：管理员端与用户端同一个小程序，通过权限隔离展示；所有 `/admin/*` 接口必须走 `AdminGuard`。
+
+## 5.10 订单聊天
+
+- **目标**：用户与管理员围绕订单进行文字沟通，实时推送。
+- **数据表**：chat_conversation、chat_message
+- **接口**：
+  - `GET /chats`、`GET /chats/:id`、`GET /chats/:id/messages`
+  - `POST /chats/:id/messages`
+  - `GET /admin/chats`、`GET /admin/chats/:id/messages`、`POST /admin/chats/:id/messages`
+- **关键规则**：
+  - 一个订单对应一个会话，聊天仅支持文字。
+  - 新消息实时推送；用户可从订单详情或“聊天” Tab 进入。
+  - 消息需展示发送者角色、发送时间、未读数量。
+
+## 5.11 公告
+
+- **目标**：管理员发布小程序内置公告，首页顶部展示。
+- **数据表**：announcement
+- **接口**：
+  - `GET /announcements`、`GET /announcements/:id`
+  - `POST / PUT / DELETE /admin/announcements`
+- **关键规则**：
+  - 公告包含标题和正文，支持上下线。
+  - 首页顶部展示当前启用的公告，按发布时间倒序排列。
 
 ---
 
 # 六、数据库设计
 
-> 统一约定：所有表使用 `utf8mb4`；业务表含 `created_at` / `updated_at`；核心表含软删除 `deleted_at`。例外：`order_item`（订单快照）、`wallet_log`（流水，追加写不可修改）仅含 `created_at`。
+> 统一约定：所有表使用 `utf8mb4`；业务表含 `created_at` / `updated_at`；核心表含软删除 `deleted_at`。例外：`order_item`（订单快照）、`wallet_log`（流水，追加写不可修改）、`chat_message`（聊天消息）仅含 `created_at`。
 
 ## admin
 
@@ -255,6 +306,7 @@ id
 username          UNIQUE 登录名
 password          bcrypt 哈希
 nickname
+wechat_openid     UNIQUE 微信订阅消息绑定
 status            0禁用 1正常
 created_at
 updated_at
@@ -389,6 +441,49 @@ created_at
 
 索引：`INDEX (user_id)`、`INDEX (order_id)`
 
+## chat_conversation
+
+```
+id
+order_id          UNIQUE FK → order
+user_id           FK → user
+last_message_at
+user_unread_count  默认 0
+admin_unread_count 默认 0
+created_at
+updated_at
+```
+
+索引：`UNIQUE (order_id)`、`INDEX (user_id)`、`INDEX (updated_at)`
+
+## chat_message
+
+```
+id
+conversation_id   FK → chat_conversation
+sender_role       user / admin
+content           文字消息
+read_at           DateTime?
+created_at
+```
+
+索引：`INDEX (conversation_id, created_at)`
+
+## announcement
+
+```
+id
+title
+content
+status            0下线 1发布
+sort              默认 0
+published_at
+created_at
+updated_at
+```
+
+索引：`INDEX (status, published_at)`
+
 ---
 
 # 七、页面设计
@@ -397,26 +492,30 @@ created_at
 
 ```
 登录
-首页
+首页（顶部公告）
 分类菜单
 菜品详情（选规格）
 购物车（本地缓存）
 确认订单
-订单详情
+订单详情（含聊天入口）
 我的订单
+聊天会话列表
+聊天详情
 我的钱包（余额 + 流水明细）
 个人中心
 ```
 
-## 管理后台
+## 管理员端（小程序内权限隔离）
 
 ```
-登录（账号密码）
+管理员登录（账号密码）
 仪表盘
 菜单管理（含规格配置）
 分类管理
 订单管理
+聊天管理
 用户管理（含赠送余额）
+公告管理
 数据统计
 系统设置
 ```
@@ -429,20 +528,24 @@ created_at
 
 | 模块 | 名称 | 交付要点 |
 |---|---|---|
-| 00-schema | Prisma schema | 一次性定义全部表（含外键 / 索引 / 规格表 / 快照字段），`prisma migrate` 落地 |
+| 00-schema | Prisma schema | 一次性定义全部表（含聊天、公告、管理员 openid），`prisma migrate` 落地 |
 | 01-auth | 登录 | 微信登录、JWT、Token 刷新 |
 | 02-user | 用户 | 用户信息、钱包余额与流水 |
 | 03-menu | 菜单 | 分类、菜品、规格（组 / 项）、图片上传 |
 | 04-cart | 购物车 | 本地缓存，纯前端 |
 | 05-order | 订单 | 创建（重算 + 校验 + 幂等）、详情、备注、取消 |
 | 06-wallet | 钱包 | 余额支付（行锁）、退款回补、流水、并发控制 |
-| 07-notify | 通知 | 微信订阅消息 |
-| 08-admin | 后台 | 后台登录、菜单 / 用户 / 订单管理（含赠送、取消退款） |
-| 09-dashboard | 统计 | 今日订单、营业额、用户数、热销商品 |
+| 07-notify | 通知 | 用户与管理员微信订阅消息 |
+| 08-chat | 聊天 | 按订单会话、文字消息、实时推送 |
+| 09-announcement | 公告 | 公告管理、首页顶部展示 |
+| 10-admin | 管理员端 | 小程序内管理员登录、菜单 / 用户 / 订单 / 公告 / 聊天管理 |
+| 11-dashboard | 统计 | 今日订单、营业额、用户数、热销商品 |
+| 12-test | 测试 | 全链路、并发、幂等、聊天与公告回归 |
 
 ## 8.2 部署前置
 
 - 在模块 03（图片上传）之前：完成云托管部署与合法域名配置（见第十六节），便于真机联调。
+- 在模块 08（聊天）之前：完成 WSS 合法域名配置，便于实时消息真机联调。
 
 ## 8.3 每模块完成清单
 
@@ -478,6 +581,28 @@ Prompt 4：生成 用户中心页面
 ```
 
 这样 AI 生成质量最高。
+
+## 9.1 每模块标准流程（Claude Code Subagent）
+
+项目内置两个 Subagent（`.claude/agents/`），在 Claude Code 中直接输入 `@module-explorer` / `@module-reviewer` 调用：
+
+| Agent | 时机 | 作用 | 调用示例 |
+|---|---|---|---|
+| `module-explorer` | 模块开发前 | 只读探索：摸清复用点、docs 与模块 Prompt 约定，返回结构化结论，不写代码 | `先用 @module-explorer 探索 X 模块` |
+| `module-reviewer` | 模块开发后、提交前 | 独立验收：对照「关键规则 / 数据库设计 / API 规范 / 模块 Prompt」逐条 PASS/FAIL，并运行 prisma/tsc/测试 | `用 @module-reviewer 验收 X 模块` |
+
+每个模块的标准流程：
+
+```
+1. 主会话读 docs/README.md「五、功能模块」对应章节 + docs/prompts/<模块号>.md
+2. 需要摸清复用点 / 既有约定时 → 委托 module-explorer 只读探索
+3. 主会话完成该模块编码（一个模块 = 一个 Prompt = 一个 Commit）
+4. 运行 prisma generate / tsc / 相关测试，通过冒烟
+5. 委托 module-reviewer 独立验收，逐条 PASS/FAIL
+6. 复核通过 → 提交一个 Commit，进入下一模块
+```
+
+> 边界：纯前端 / 真机类项（购物车 Storage、订阅消息授权、WSS 实时推送、断线重连）reviewer 只做静态核对，真机表现需人工在微信开发者工具验证。
 
 ---
 
@@ -563,6 +688,7 @@ POST   /auth/refresh             # token 刷新
 GET    /auth/profile
 POST   /admin/auth/login         # 管理员账号密码登录
 POST   /admin/auth/logout
+POST   /admin/auth/bind-openid   # 管理员绑定当前微信 openid（订阅消息）
 ```
 
 ### User
@@ -604,10 +730,28 @@ GET    /orders/:id
 POST   /orders/:id/cancel        # 取消；已支付自动退款回补余额
 ```
 
+### Chat
+
+```
+GET    /chats                    # 我的会话列表
+GET    /chats/:id                # 会话详情（含订单信息）
+GET    /chats/:id/messages       # 消息列表（分页）
+POST   /chats/:id/messages       # 发送文字消息
+```
+
+### Announcement
+
+```
+GET    /announcements            # 公告列表
+GET    /announcements/latest     # 首页顶部最新公告
+GET    /announcements/:id        # 公告详情
+```
+
 ### Admin
 
 ```
 GET    /admin/orders
+POST   /admin/orders/:id/confirm # 确认订单，进入制作中
 POST   /admin/orders/:id/complete
 POST   /admin/orders/:id/cancel  # 取消并退款
 GET    /admin/users
@@ -621,6 +765,12 @@ DELETE /admin/menu/:id
 POST   /admin/category
 PUT    /admin/category/:id
 DELETE /admin/category/:id
+GET    /admin/chats              # 管理员会话列表
+GET    /admin/chats/:id/messages
+POST   /admin/chats/:id/messages # 管理员回复
+POST   /admin/announcements
+PUT    /admin/announcements/:id
+DELETE /admin/announcements/:id
 ```
 
 ## 返回格式
@@ -647,6 +797,10 @@ DELETE /admin/category/:id
 40004  订单状态不允许该操作
 40005  重复提交
 40101  token 过期或无效
+31004  公告不存在
+31005  会话不存在
+31006  无权访问该会话
+31007  消息内容不合法
 ```
 
 ---
@@ -705,9 +859,11 @@ docs/prompts/
     05-order.md
     06-wallet.md
     07-notify.md
-    08-admin.md
-    09-dashboard.md
-    10-test.md
+    08-chat.md
+    09-announcement.md
+    10-admin.md
+    11-dashboard.md
+    12-test.md
 ```
 
 ## Prompt 编写规范
@@ -809,17 +965,20 @@ docs/
    ```
 
 3. **初始化数据库**：`npx prisma migrate deploy`。
-4. **配置合法域名**：把云托管分配的默认 HTTPS 域名（形如 `https://<服务>-<环境id>.ap-shanghai.run.tcloudbase.com`）填入公众平台「服务器域名 → request 合法域名」，**免备案，立即生效**。
+4. **配置合法域名**：把云托管分配的默认 HTTPS 域名（形如 `https://<服务>-<环境id>.ap-shanghai.run.tcloudbase.com`）填入公众平台「服务器域名 → request 合法域名」；聊天实时推送还需配置对应的 WSS 合法域名，**免备案，立即生效**。
 5. **发布体验版**：开发者工具上传 → 后台设体验版 → 添加 5~10 个体验成员 → 成员扫码/搜索即可使用。
 
-### 管理后台
+### 管理员端（小程序内）
 
-- Vue3 `npm run build` 产物上传云开发**静态托管**（自带免备案 HTTPS 域名），或仅管理员本机运行。
-- 若后台调用后端接口，需在 NestJS 配置 CORS。
+- 管理员端与用户端位于同一个小程序，一次上传体验版即可，无需单独部署 Web 后台。
+- 管理员端页面和用户端页面通过角色权限隔离，所有管理接口仍由 `AdminGuard` 保护。
+- 管理员需在小程序内完成微信订阅授权，用于接收新订单和取消订单通知。
 
 ### 订阅消息
 
-- 模板申请需类目，个人主体可选点餐类模板有限；申请不到时降级为**订单页轮询状态**。
+- 用户和管理员都需申请对应订阅消息模板。
+- 个人主体可选点餐类模板有限；申请不到时降级为**订单页轮询状态**。
+- 管理员订阅消息不可用时，在管理员端订单列表和聊天列表中以未读/待处理形式兜底。
 
 ### 费用
 
@@ -846,6 +1005,6 @@ docs/
 
 # 附：本文档在知识库中的角色
 
-本文档是 `docs/` 知识库的核心入口，涵盖需求、技术选型、数据库设计、开发规范与部署方案（v1.3）。
+本文档是 `docs/` 知识库的核心入口，涵盖需求、技术选型、数据库设计、开发规范与部署方案（v1.4）。
 
 后续开发可在此基础上按需拆分为 `database.md`、`api.md`、`error-code.md` 等子文档，目标结构见「十五、项目文档结构」。
