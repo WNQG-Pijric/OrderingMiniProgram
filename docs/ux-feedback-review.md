@@ -283,6 +283,18 @@ Claude 的四个 P0/P1 根因定位方向正确，A → C → B 的实施顺序�
 - 购物车过期项校验失败（网络异常）不阻塞结算，模块 05 服务端仍会重算
 - 真机验证清单见 8.8 验收补充（筛选切换无 status=undefined、switch 反馈、非法输入拦截、角标刷新、过期项阻止结算）
 
+### 10.1 module-reviewer 验收与复审（2026-08-06）
+
+首轮验收 **FAIL（2 阻断项）**，均在购物车过期项校验链路：
+- **F1「已下架」标记完全失效**：后端 `GET /menu/:id` 对已下架菜品抛 31002（而非返回 status=0），`request.js` reject 的 Error 不带业务码，`validateItems` 无法区分业务错误与网络失败 → 下架条目永无标记
+- **F2 标记不渲染**：`validateItems` 完成仅 `setData({ staleMap })`，wxml 绑定 `{{item.stale}}`（render 时快照）→ 首次进入不显示，直到下次交互触发 render
+
+修复提交 `f55a2f1`：request 封装 reject 挂 `err.code`；validateItems 按 `err.code === 31002` 判定已下架、网络失败不标记；校验完成后追加 `render()`。顺带修复：menu-edit 图片清空失效（`form.image || undefined` 吞掉空串）、「月售」改「销量」（累计销量语义）、角标定位 token 化。
+
+**复审 PASS**：时序竞态静态核对 + 4 场景模拟通过（已下架/库存不足/网络失败/正常）；err.code 挂载覆盖所有 reject 路径，唯一已知限制为 access+refresh 双失效边缘场景不挂 code（`/menu/:id` 公开接口不会走该链，可接受）；image 清图链路后端实际置空确认；109 tests 全绿、工作区干净。
+
+新增真机验证项：① 购物车首次进入过期标记立即显示且结算被阻止；② 首页角标 `calc()` + CSS 变量渲染（基础库版本支持）；③ 管理端编辑「删除图片」后保存图片真正清除。
+
 ### 9.3 验收标准（合并原 7 条 + 评审 6 条）
 
 1. 管理端：点【全部】正常展示全部菜品、请求参数无 `status=undefined`、无循环报错；筛选切换有选中态；switch 上下架状态与 toast 文案一致（真机）
