@@ -11,7 +11,6 @@ describe('WechatService', () => {
 
   beforeEach(async () => {
     jest.resetAllMocks();
-    // @ts-expect-error 测试环境替换全局 fetch
     global.fetch = mockFetch;
     mockConfig.get.mockImplementation((key: string) => {
       if (key === 'WECHAT_APPID') return 'appid-test';

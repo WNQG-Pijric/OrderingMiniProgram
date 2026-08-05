@@ -34,9 +34,14 @@ export class WechatService {
 
     let data: { openid?: string; errcode?: number; errmsg?: string };
     try {
-      const resp = await fetch(url);
+      // 微信接口 10s 超时，避免容器挂起；错误详情记日志便于云托管排查
+      const resp = await fetch(url, { signal: AbortSignal.timeout(10_000) });
       data = (await resp.json()) as typeof data;
-    } catch {
+    } catch (err) {
+      this.logger.error(
+        `code2Session 网络异常：${(err as Error).message}`,
+        (err as Error).stack,
+      );
       throw new BizException(ErrorCode.WECHAT_API_ERROR, '微信服务调用失败');
     }
 
