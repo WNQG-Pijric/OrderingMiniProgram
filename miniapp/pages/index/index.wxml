@@ -4,6 +4,9 @@
       <text class="nickname">{{user.nickname || '微信用户'}}</text>
       <text class="balance">余额：{{user.balance}}</text>
     </view>
+    <button class="profile-btn" type="default" bindtap="goProfile">
+      个人中心
+    </button>
   </block>
   <button
     wx:else

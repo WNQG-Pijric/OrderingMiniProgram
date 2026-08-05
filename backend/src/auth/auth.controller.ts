@@ -9,16 +9,11 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { Request } from 'express';
 import { UserGuard } from './guards/user.guard';
 import { AuthService } from './auth.service';
+import type { AuthRequest } from './auth-request.interface';
 import { LoginDto } from './dto/login.dto';
 import { RefreshDto } from './dto/refresh.dto';
-
-/** 通过 UserGuard 后的请求：req.user 含 userId / openid / role */
-interface AuthRequest extends Request {
-  user: { userId: number; openid: string; role: string };
-}
 
 @ApiTags('auth')
 @Controller('auth')

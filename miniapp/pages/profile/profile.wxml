@@ -1,0 +1,60 @@
+<view class="container">
+  <!-- 用户信息卡片 -->
+  <view class="card">
+    <image
+      wx:if="{{user.avatar}}"
+      class="avatar"
+      src="{{user.avatar}}"
+      mode="aspectFill"
+    />
+    <view wx:else class="avatar avatar-placeholder">无</view>
+    <view class="info">
+      <text class="nickname">{{user.nickname || '微信用户'}}</text>
+      <text class="role">{{user.role === 'ADMIN' ? '管理员' : '用户'}}</text>
+    </view>
+  </view>
+
+  <!-- 钱包入口 -->
+  <view class="menu" bindtap="goWallet">
+    <text>我的钱包</text>
+    <text class="arrow">余额 ¥{{user.balance || '0.00'}} ›</text>
+  </view>
+
+  <!-- 查看态：编辑按钮 -->
+  <button
+    wx:if="{{!editing}}"
+    class="edit-btn"
+    type="primary"
+    bindtap="startEdit"
+  >
+    编辑资料
+  </button>
+
+  <!-- 编辑态：昵称 / 头像 URL -->
+  <view wx:else class="form">
+    <input
+      class="input"
+      placeholder="昵称（最多 30 字）"
+      value="{{nickname}}"
+      maxlength="30"
+      bindinput="onNicknameInput"
+    />
+    <input
+      class="input"
+      placeholder="头像 URL（可选，模块 03 支持图片直传）"
+      value="{{avatar}}"
+      bindinput="onAvatarInput"
+    />
+    <view class="form-actions">
+      <button class="cancel" bindtap="cancelEdit">取消</button>
+      <button
+        class="save"
+        type="primary"
+        loading="{{saving}}"
+        bindtap="saveProfile"
+      >
+        保存
+      </button>
+    </view>
+  </view>
+</view>

@@ -22,6 +22,11 @@ Page({
       });
   },
 
+  /** 进入个人中心 */
+  goProfile() {
+    wx.navigateTo({ url: '/pages/profile/profile' });
+  },
+
   /** 微信登录 */
   onLogin() {
     this.setData({ loading: true });

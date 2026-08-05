@@ -21,6 +21,11 @@
   color: #888;
 }
 
+.profile-btn {
+  margin-top: 40rpx;
+  width: 480rpx;
+}
+
 .login-btn {
   width: 480rpx;
 }

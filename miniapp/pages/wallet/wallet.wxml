@@ -1,0 +1,35 @@
+<view class="container">
+  <!-- 余额卡片 -->
+  <view class="balance-card">
+    <text class="label">当前余额（元）</text>
+    <text class="amount">{{balance}}</text>
+  </view>
+
+  <view class="section-title">收支明细</view>
+
+  <view wx:if="{{logs.length === 0 && !loading}}" class="empty">
+    暂无流水记录
+  </view>
+
+  <view class="log-list">
+    <view class="log-item" wx:for="{{logs}}" wx:key="id">
+      <view class="log-left">
+        <text class="log-type">{{item.typeText}}</text>
+        <text class="log-remark">{{item.remark || '—'}}</text>
+        <text class="log-time">{{item.timeText}}</text>
+      </view>
+      <view class="log-right">
+        <text
+          class="log-change {{item.changeNum >= 0 ? 'plus' : 'minus'}}"
+        >{{item.changeText}}</text>
+        <text class="log-after">余额 {{item.balanceAfter}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="load-more">
+    <text wx:if="{{loading}}">加载中...</text>
+    <text wx:elif="{{hasMore}}">上拉加载更多</text>
+    <text wx:else>没有更多了</text>
+  </view>
+</view>
