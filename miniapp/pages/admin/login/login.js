@@ -6,10 +6,15 @@ Page({
     username: '',
     password: '',
     loading: false,
+    showPwd: false, // 密码可见切换
   },
 
   onInput(e) {
     this.setData({ [e.currentTarget.dataset.field]: e.detail.value });
+  },
+
+  togglePwd() {
+    this.setData({ showPwd: !this.data.showPwd });
   },
 
   onLogin() {

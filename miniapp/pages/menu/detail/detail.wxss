@@ -86,6 +86,10 @@
 .spec-section__empty {
   font-size: var(--font-size-body-sm);
   color: var(--text-placeholder);
+  background-color: var(--bg-muted);
+  border-radius: var(--radius-md);
+  padding: var(--space-xl);
+  text-align: center;
 }
 
 /* 底部固定栏 */

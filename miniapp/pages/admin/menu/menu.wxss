@@ -4,13 +4,13 @@
   padding-bottom: var(--space-3xl);
 }
 
-/* 顶部工具栏 */
+/* 顶部工具栏：筛选独立一行，操作右对齐 */
 .toolbar {
   background-color: var(--bg-card);
   padding: var(--space-xl) var(--space-2xl);
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: var(--space-md);
   border-bottom: 2rpx solid var(--border-color);
 }
 .toolbar__filters {
@@ -27,10 +27,12 @@
 .filter--active {
   color: #ffffff;
   background-color: var(--color-primary);
+  font-weight: 500;
 }
 .toolbar__ops {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
 }
 .link-btn {
   font-size: var(--font-size-body-sm);

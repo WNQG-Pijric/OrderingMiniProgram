@@ -49,7 +49,10 @@
         <text wx:if="{{item.description}}" class="menu-item__desc c-ellipsis">{{item.description}}</text>
         <view class="menu-item__bottom">
           <text class="c-price">{{item.price}}</text>
-          <text wx:if="{{item.isSpec}}" class="c-tag">多规格</text>
+          <view class="menu-item__meta">
+            <text wx:if="{{item.sales > 0}}" class="menu-item__sales">月售 {{item.sales}}</text>
+            <text wx:if="{{item.isSpec}}" class="c-tag">多规格</text>
+          </view>
         </view>
       </view>
     </view>

@@ -55,8 +55,11 @@
   height: 0;
 }
 
-/* 分类 tab */
+/* 分类 tab：页面滚动时吸顶 */
 .tabs {
+  position: sticky;
+  top: 0;
+  z-index: 10;
   white-space: nowrap;
   padding: var(--space-md) var(--space-xl);
   background-color: var(--bg-card);
@@ -75,12 +78,12 @@
 .tab--active {
   color: #ffffff;
   background-color: var(--color-primary);
-  font-weight: 500;
+  font-weight: 600;
 }
 
 /* 菜品列表 */
 .menu-list {
-  padding: var(--space-lg) var(--space-xl);
+  padding: var(--space-xl) var(--space-2xl);
 }
 /* 加载失败重试态（与"暂无菜品"区分） */
 .menu-error {
@@ -91,7 +94,7 @@
   background-color: var(--bg-card);
   border-radius: var(--radius-lg);
   padding: var(--space-xl);
-  margin-bottom: var(--space-lg);
+  margin-bottom: var(--space-xl);
   box-shadow: var(--shadow-card);
 }
 .menu-item__img {
@@ -123,4 +126,13 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+.menu-item__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+.menu-item__sales {
+  font-size: var(--font-size-small);
+  color: var(--text-tertiary);
 }

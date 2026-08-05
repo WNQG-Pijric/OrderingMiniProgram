@@ -1,23 +1,43 @@
 <view class="page">
-  <view class="logo">管理员登录</view>
-  <view class="c-card form">
-    <input
-      class="form__input"
-      placeholder="账号"
-      value="{{username}}"
-      data-field="username"
-      bindinput="onInput"
-    />
-    <input
-      class="form__input"
-      placeholder="密码"
-      password
-      value="{{password}}"
-      data-field="password"
-      bindinput="onInput"
-    />
-    <button class="c-btn c-btn--primary c-btn--block" loading="{{loading}}" bindtap="onLogin">
-      登录
-    </button>
+  <!-- 品牌区 -->
+  <view class="brand">
+    <view class="brand__logo">点餐</view>
+    <text class="brand__title">点餐管理</text>
+    <text class="brand__sub">微信点餐小程序 · 管理后台</text>
   </view>
+
+  <view class="c-card form">
+    <view class="form__row">
+      <text class="form__label">账号</text>
+      <input
+        class="form__input"
+        placeholder="请输入管理员账号"
+        value="{{username}}"
+        data-field="username"
+        bindinput="onInput"
+      />
+    </view>
+    <view class="form__row">
+      <text class="form__label">密码</text>
+      <view class="form__pwd">
+        <input
+          class="form__input form__input--pwd"
+          placeholder="请输入密码"
+          password="{{!showPwd}}"
+          value="{{password}}"
+          data-field="password"
+          bindinput="onInput"
+        />
+        <text class="form__pwd-toggle" bindtap="togglePwd">{{showPwd ? '隐藏' : '显示'}}</text>
+      </view>
+    </view>
+    <button
+      class="c-btn c-btn--primary c-btn--block"
+      loading="{{loading}}"
+      disabled="{{loading}}"
+      bindtap="onLogin"
+    >{{loading ? '登录中...' : '登录'}}</button>
+  </view>
+
+  <text class="footer-tip">v1.0.0 · 如遇问题请联系管理员</text>
 </view>
