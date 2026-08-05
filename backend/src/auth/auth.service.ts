@@ -32,7 +32,7 @@ export class AuthService {
       update: {},
       create: { openid },
     });
-    this.assertActive(user);
+    this.assertActiveUser(user);
     const tokens = await this.signTokens(user);
     return { ...tokens, user: this.toSafeUser(user) };
   }
@@ -63,7 +63,7 @@ export class AuthService {
     if (!user) {
       throw new BizException(ErrorCode.USER_NOT_FOUND);
     }
-    this.assertActive(user);
+    this.assertActiveUser(user);
 
     const tokens = await this.signTokens(user);
     return { ...tokens, user: this.toSafeUser(user) };
@@ -81,12 +81,10 @@ export class AuthService {
    */
   async findActiveUser(userId: number): Promise<User> {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
-    if (!user || user.deletedAt) {
+    if (!user) {
       throw new BizException(ErrorCode.USER_NOT_FOUND);
     }
-    if (user.status !== 1) {
-      throw new BizException(ErrorCode.ACCOUNT_DISABLED);
-    }
+    this.assertActiveUser(user);
     return user;
   }
 
@@ -104,8 +102,17 @@ export class AuthService {
     return { accessToken, refreshToken };
   }
 
-  /** 禁用用户拦截：status = 0 不允许登录 */
-  private assertActive(user: { status: number }): void {
+  /**
+   * 用户对象活跃校验（登录 / 刷新 / 查询共用）：
+   * 软删除（deletedAt 非空）→ 30001；禁用（status=0）→ 20004。
+   */
+  private assertActiveUser(user: {
+    status: number;
+    deletedAt: Date | null;
+  }): void {
+    if (user.deletedAt) {
+      throw new BizException(ErrorCode.USER_NOT_FOUND);
+    }
     if (user.status !== 1) {
       throw new BizException(ErrorCode.ACCOUNT_DISABLED);
     }

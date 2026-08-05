@@ -80,6 +80,18 @@ describe('Auth (e2e)', () => {
     expect(mockPrisma.user.upsert).toHaveBeenCalled();
   });
 
+  it('POST /auth/login 软删除用户 → 30001', async () => {
+    mockPrisma.user.upsert.mockResolvedValue({
+      ...mockUser,
+      deletedAt: new Date('2026-08-05T00:00:00Z'),
+    });
+    const res = await request(app.getHttpServer())
+      .post('/auth/login')
+      .send({ code: 'code-e2e' });
+    expect(res.status).toBe(200);
+    expect(res.body.code).toBe(30001);
+  });
+
   it('GET /auth/profile 未携带 token → 20001 未登录', async () => {
     const res = await request(app.getHttpServer()).get('/auth/profile');
     expect(res.status).toBe(200);

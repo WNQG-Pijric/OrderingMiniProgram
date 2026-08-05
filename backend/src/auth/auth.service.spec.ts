@@ -112,6 +112,18 @@ describe('AuthService', () => {
         response: { code: ErrorCode.ACCOUNT_DISABLED },
       });
     });
+
+    it('软删除用户（deletedAt 非空）登录 → 30001', async () => {
+      mockWechat.code2Session.mockResolvedValue('openid-test');
+      mockPrisma.user.upsert.mockResolvedValue(
+        buildUser({ deletedAt: new Date('2026-08-05T00:00:00Z') }),
+      );
+
+      await expect(service.login({ code: 'code' })).rejects.toMatchObject({
+        response: { code: ErrorCode.USER_NOT_FOUND },
+      });
+      expect(mockJwt.signAsync).not.toHaveBeenCalled();
+    });
   });
 
   describe('refresh', () => {
@@ -153,6 +165,16 @@ describe('AuthService', () => {
       await expect(service.refresh('valid')).rejects.toMatchObject({
         response: { code: ErrorCode.USER_NOT_FOUND },
       });
+    });
+
+    it('软删除用户刷新 → 30001', async () => {
+      mockPrisma.user.findUnique.mockResolvedValue(
+        buildUser({ deletedAt: new Date('2026-08-05T00:00:00Z') }),
+      );
+      await expect(service.refresh('valid')).rejects.toMatchObject({
+        response: { code: ErrorCode.USER_NOT_FOUND },
+      });
+      expect(mockJwt.signAsync).not.toHaveBeenCalled();
     });
   });
 
