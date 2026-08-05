@@ -44,11 +44,13 @@ Page({
       data: { page, pageSize: PAGE_SIZE, status: status || undefined },
     })
       .then((data) => {
+        const list = reset ? data.list : this.data.list.concat(data.list);
         this.setData({
-          list: reset ? data.list : this.data.list.concat(data.list),
+          list,
           total: data.total,
           page: page + 1,
-          hasMore: this.data.list.length + data.list.length < data.total,
+          // 已加载条数 < 总数 → 还有下一页
+          hasMore: list.length < data.total,
           loading: false,
         });
       })

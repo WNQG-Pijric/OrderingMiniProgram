@@ -163,14 +163,19 @@ describe('MenuService', () => {
       expect(result[1].specGroups).toEqual([]);
     });
 
-    it('带 categoryId：按分类过滤（不再要求分类启用条件）', async () => {
+    it('带 categoryId：按分类过滤且仍要求分类启用（与详情规则一致）', async () => {
       mockPrisma.menu.findMany.mockResolvedValue([buildMenu()]);
 
       await service.listMenus(1);
 
       expect(mockPrisma.menu.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: { status: 1, deletedAt: null, categoryId: 1 },
+          where: {
+            status: 1,
+            deletedAt: null,
+            category: { status: 1 },
+            categoryId: 1,
+          },
         }),
       );
     });

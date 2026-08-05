@@ -8,6 +8,7 @@ Page({
     selections: {}, // groupId -> 选中的 itemId
     count: 1,
     totalPrice: '0.00',
+    unitPrice: '0.00', // 单价 = 基础价 + 规格加价（购物车存此值）
     specText: '', // 已选规格文本快照（如：甜度/半糖 温度/少冰）
   },
 
@@ -71,6 +72,7 @@ Page({
     });
     const total = (cents * count) / 100;
     this.setData({
+      unitPrice: (cents / 100).toFixed(2),
       totalPrice: total.toFixed(2),
       specText: specTexts.join(' '),
     });
@@ -90,8 +92,8 @@ Page({
       specItemIds,
       specText: this.data.specText,
       count,
-      // 单价 = 基础价 + 规格加价（展示用；下单金额以服务端重算为准）
-      price: this.data.totalPrice,
+      // 单价 = 基础价 + 规格加价（下单金额以服务端重算为准）
+      price: this.data.unitPrice,
     });
     wx.showToast({ title: '已加入购物车', icon: 'success' });
     setTimeout(() => wx.navigateBack(), 600);

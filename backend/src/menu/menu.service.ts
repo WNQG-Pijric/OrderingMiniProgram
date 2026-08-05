@@ -41,16 +41,16 @@ export class MenuService {
   }
 
   /**
-   * 菜品列表（含规格）：只返回上架且未软删除的菜品；
-   * 带 categoryId 时按分类过滤，否则仅返回所属分类启用的菜品。
+   * 菜品列表（含规格）：只返回上架且未软删除、所属分类启用的菜品；
+   * 带 categoryId 时按分类过滤（与详情 getMenu 的可见性规则一致，防止
+   * 分类停用后列表可见但详情 31002 的不一致）。
    */
   async listMenus(categoryId?: number) {
     const where: Prisma.MenuWhereInput = {
       status: 1,
       deletedAt: null,
-      ...(categoryId !== undefined
-        ? { categoryId }
-        : { category: { status: 1 } }),
+      category: { status: 1 },
+      ...(categoryId !== undefined ? { categoryId } : {}),
     };
     const menus = await this.prisma.menu.findMany({
       where,
