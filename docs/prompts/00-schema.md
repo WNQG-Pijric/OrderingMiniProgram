@@ -19,7 +19,7 @@ NestJS、Prisma、MySQL 8（utf8mb4）。
 - 字符集 `utf8mb4`（备注、昵称可能含 emoji）。
 - 含 `created_at` / `updated_at`；核心表含软删除 `deleted_at`（`DateTime?`，非空即已删除）。
 - 金额一律 `Decimal @db.Decimal(10,2)`，禁止 Float。
-- `status` 字段 README 用 0/1 表示，Prisma 中建议用枚举，值含义不变（0=禁用/停用/下架，1=正常/启用/上架）。
+- `status` 字段严格按 README 用 `Int`（TINYINT，0/1）表示，不建枚举（0=禁用/停用/下架，1=正常/启用/上架）。
 
 ### 1. admin（管理员）
 
@@ -112,7 +112,7 @@ NestJS、Prisma、MySQL 8（utf8mb4）。
 | user_id | FK → user | |
 | amount | Decimal(10,2) | 实付金额（服务端重算） |
 | total_amount | Decimal(10,2) | 原价（含规格加价） |
-| remark | String @db.VarChar(100) | 备注，≤100 字 |
+| remark | String? @db.VarChar(100) | 备注，≤100 字，允许为空（无备注） |
 | client_order_no | String UNIQUE | 客户端幂等键 |
 | status | 枚举 | PENDING_PAYMENT 待支付 / PAID 已支付 / MAKING 制作中 / COMPLETED 已完成 / CANCELED 已取消 |
 | pay_type | String / 枚举 | balance |
@@ -153,7 +153,7 @@ NestJS、Prisma、MySQL 8（utf8mb4）。
 
 ## 要求
 
-- Prisma schema 用枚举表达 `status` / `role` / 订单状态 / 流水类型，并注释对应 0/1 语义（避免与 README 数值冲突时无法维护）。
+- `status` 类字段用 `Int`（TINYINT，0/1）严格对齐 README；`role` / 订单状态 / 流水类型等多值字段用枚举表达，并注释 0/1 语义。
 - 外键关系用 Prisma relation（`@relation`），`onDelete` 策略：核心业务表用 `Restrict`（防误删级联），快照冗余字段不设强外键。
 - `DATABASE_URL` 通过 `.env` / 环境变量注入（云托管内网 MySQL）。
 - 生成迁移后执行 `prisma migrate dev`，确认迁移可应用。
