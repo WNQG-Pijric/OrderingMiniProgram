@@ -589,7 +589,7 @@ Prompt 4：生成 用户中心页面
 | Agent | 时机 | 作用 | 调用示例 |
 |---|---|---|---|
 | `module-explorer` | 模块开发前 | 只读探索：摸清复用点、docs 与模块 Prompt 约定，返回结构化结论，不写代码 | `先用 @module-explorer 探索 X 模块` |
-| `module-reviewer` | 模块开发后、提交前 | 独立验收：对照「关键规则 / 数据库设计 / API 规范 / 模块 Prompt」逐条 PASS/FAIL，并运行 prisma/tsc/测试 | `用 @module-reviewer 验收 X 模块` |
+| `module-reviewer` | 模块开发后、提交前 | 独立验收：对照「关键规则 / 数据库设计 / API 规范 / 模块 Prompt」逐条 PASS/FAIL，并运行 prisma/tsc/测试；同时检查前后端一致性、单测真实性、跨模块契约、提交边界，验收项标注证据类型 | `用 @module-reviewer 验收 X 模块` |
 
 每个模块的标准流程：
 
@@ -598,11 +598,12 @@ Prompt 4：生成 用户中心页面
 2. 需要摸清复用点 / 既有约定时 → 委托 module-explorer 只读探索
 3. 主会话完成该模块编码（一个模块 = 一个 Prompt = 一个 Commit）
 4. 运行 prisma generate / tsc / 相关测试，通过冒烟
-5. 委托 module-reviewer 独立验收，逐条 PASS/FAIL
-6. 复核通过 → 提交一个 Commit，进入下一模块
+5. 委托 module-reviewer 独立验收，逐条 PASS/FAIL，并标注证据类型（实测命令输出 / 静态核对 / 需真机人工验证）
+6. 复核通过 → 提交一个 Commit
+7. 提交后做一次轻量 diff 抽查：确认 commit 内容与验收结论一致，未混入用户未提交改动、敏感文件或无关产物；通过后进入下一模块
 ```
 
-> 边界：纯前端 / 真机类项（购物车 Storage、订阅消息授权、WSS 实时推送、断线重连）reviewer 只做静态核对，真机表现需人工在微信开发者工具验证。
+> 边界：纯前端 / 真机类项（购物车 Storage、订阅消息授权、WSS 实时推送、断线重连）reviewer 只做静态核对，真机表现需人工在微信开发者工具验证；静态核对包含分页、金额字段、本地缓存结构等数据流推演，不是只读代码。
 
 ---
 
