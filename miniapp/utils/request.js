@@ -4,6 +4,7 @@
 // - 业务成功 resolve(body.data)；失败 reject(new Error(body.message))
 const { BASE_URL } = require('./config');
 const auth = require('./auth');
+const { cleanQuery, cleanBody } = require('./params');
 
 /**
  * @param {object} options
@@ -15,12 +16,16 @@ const auth = require('./auth');
 function request(options) {
   return new Promise((resolve, reject) => {
     const doRequest = (retried) => {
+      const method = (options.method || 'GET').toUpperCase();
       wx.request({
         url: options.url.startsWith('http')
           ? options.url
           : `${BASE_URL}${options.url}`,
-        method: options.method || 'GET',
-        data: options.data,
+        method,
+        // GET/DELETE 走 query 清理；POST/PUT 走 body 清理（保留 null 语义）
+        data: method === 'GET' || method === 'DELETE'
+          ? cleanQuery(options.data)
+          : cleanBody(options.data),
         header: {
           'Content-Type': 'application/json',
           ...(auth.getToken()

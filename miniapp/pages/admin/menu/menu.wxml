@@ -12,7 +12,8 @@
     </view>
   </view>
 
-  <view wx:if="{{loading && list.length === 0}}" class="c-empty">加载中...</view>
+  <view wx:if="{{loadError}}" class="c-empty list-error" bindtap="reload">加载失败，点击重试</view>
+  <view wx:elif="{{loading && list.length === 0}}" class="c-empty">加载中...</view>
   <view wx:elif="{{list.length === 0}}" class="c-empty">暂无菜品</view>
 
   <view class="list">

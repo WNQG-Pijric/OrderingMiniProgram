@@ -9,6 +9,7 @@ Page({
     activeCategoryId: 0, // 0 = 全部
     menus: [],
     loading: false,
+    loadError: false, // 菜单加载失败（与"暂无菜品"分开显示）
   },
 
   onLoad() {
@@ -32,13 +33,18 @@ Page({
 
   /** 菜品列表（可按分类过滤） */
   loadMenus(categoryId) {
-    this.setData({ loading: true });
+    this.setData({ loading: true, loadError: false });
     request({
       url: '/menu/list',
       data: categoryId ? { categoryId } : {},
     })
       .then((menus) => this.setData({ menus, loading: false }))
-      .catch(() => this.setData({ loading: false }));
+      .catch(() => this.setData({ loading: false, loadError: true }));
+  },
+
+  /** 加载失败重试 */
+  retryMenus() {
+    this.loadMenus(this.data.activeCategoryId);
   },
 
   /** 切换分类 tab */

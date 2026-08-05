@@ -61,6 +61,10 @@
 .menu-list {
   padding: var(--space-lg) var(--space-xl);
 }
+/* 加载失败重试态（与"暂无菜品"区分） */
+.menu-error {
+  color: var(--color-link);
+}
 .menu-item {
   display: flex;
   background-color: var(--bg-card);

@@ -59,6 +59,11 @@ Page({
       wx.showToast({ title: '请输入分类名称', icon: 'none' });
       return;
     }
+    // 排序可空（空=0），非空必须是非负整数，避免 Number(sort) || 0 静默兜底
+    if (sort !== '' && !/^\d+$/.test(String(sort))) {
+      wx.showToast({ title: '排序必须是非负整数', icon: 'none' });
+      return;
+    }
     const payload = { name: name.trim(), sort: Number(sort) || 0 };
     const p = id
       ? request({ url: `/admin/category/${id}`, method: 'PUT', data: payload })
@@ -72,7 +77,9 @@ Page({
 
   /** 启停切换（停用 = 删除的等效表达，数据保留） */
   onToggleStatus(e) {
-    const { id, status } = e.currentTarget.dataset;
+    const { id } = e.currentTarget.dataset;
+    // dataset 类型不确定（静态字符串 / 插值数字），统一 Number 后比较
+    const status = Number(e.currentTarget.dataset.status);
     request({
       url: `/admin/category/${id}`,
       method: 'PUT',

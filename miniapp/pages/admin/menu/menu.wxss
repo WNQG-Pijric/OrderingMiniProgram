@@ -104,3 +104,8 @@
   padding: var(--space-xl) 0;
   font-size: var(--font-size-small);
 }
+
+/* 加载失败重试态（与"暂无菜品"区分） */
+.list-error {
+  color: var(--color-link);
+}

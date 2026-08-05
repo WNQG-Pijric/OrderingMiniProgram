@@ -36,8 +36,9 @@ export class AdminMenuQueryDto {
   })
   @IsOptional()
   @Type(() => Number)
-  @IsInt({ message: '状态必须为整数' })
-  @IsIn([0, 1], { message: '状态只能为 0 或 1' })
+  // 对客文案（原"状态必须为整数/状态只能为 0 或 1"为开发口径，正常前端不会触发）
+  @IsInt({ message: '状态筛选参数不正确' })
+  @IsIn([0, 1], { message: '状态筛选参数不正确' })
   status?: number;
 
   @ApiPropertyOptional({ description: '菜品名称关键字', example: '奶茶' })

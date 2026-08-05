@@ -24,6 +24,7 @@ Page({
     categoryIndex: 0,
     status: 1,
     specGroups: [],
+    saving: false, // 保存中防重复提交
   },
 
   onLoad(options) {
@@ -168,26 +169,65 @@ Page({
 
   // ---------- 保存 ----------
 
+  /** 非负数字（最多两位小数）/ 非负整数正则 */
+  isMoney(v) {
+    return /^\d+(\.\d{1,2})?$/.test(v);
+  },
+
+  isInt(v) {
+    return /^\d+$/.test(v);
+  },
+
   onSave() {
     const { form, status, specGroups } = this.data;
+    if (this.data.saving) return; // 防重复提交
+    // 基本信息校验
     if (!form.name.trim()) return wx.showToast({ title: '请输入菜品名称', icon: 'none' });
     if (!form.categoryId) return wx.showToast({ title: '请选择分类', icon: 'none' });
-    if (form.price === '' || isNaN(Number(form.price))) {
-      return wx.showToast({ title: '请输入正确的基础价', icon: 'none' });
+    if (form.price === '' || !this.isMoney(form.price)) {
+      return wx.showToast({ title: '请输入正确的基础价（非负，最多两位小数）', icon: 'none' });
+    }
+    if (form.stock !== '' && !this.isInt(form.stock)) {
+      return wx.showToast({ title: '库存必须是非负整数', icon: 'none' });
+    }
+    if (form.sort !== '' && !this.isInt(String(form.sort))) {
+      return wx.showToast({ title: '排序必须是非负整数', icon: 'none' });
     }
 
-    // 过滤空规格组 / 空规格项
-    const groups = specGroups
-      .filter((g) => g.name.trim())
-      .map((g) => ({
-        name: g.name.trim(),
-        items: g.items
-          .filter((i) => i.name.trim())
-          .map((i) => ({
-            name: i.name.trim(),
-            priceDelta: i.priceDelta === '' ? 0 : Number(i.priceDelta),
-          })),
-      }));
+    // 规格校验与组装：不合法明确提示并 return，不静默丢弃
+    const groups = [];
+    for (let gi = 0; gi < specGroups.length; gi++) {
+      const g = specGroups[gi] || {};
+      const gName = (g.name || '').trim();
+      const rawItems = g.items || [];
+      const deltaStr = (i) => {
+        const d = i.priceDelta;
+        return d === undefined || d === null || d === '' ? '' : String(d).trim();
+      };
+      // 空组（组名 + 全部项都空）→ 丢弃，无提示
+      const hasContent =
+        gName || rawItems.some((i) => (i.name || '').trim() || deltaStr(i) !== '');
+      if (!hasContent) continue;
+      if (!gName) {
+        return wx.showToast({ title: `第 ${gi + 1} 组规格组名不能为空`, icon: 'none' });
+      }
+      const items = [];
+      for (let ii = 0; ii < rawItems.length; ii++) {
+        const i = rawItems[ii] || {};
+        const iName = (i.name || '').trim();
+        const d = deltaStr(i);
+        // 空行（名称 + 加价都空）→ 丢弃
+        if (!iName && d === '') continue;
+        if (!iName) {
+          return wx.showToast({ title: `第 ${gi + 1} 组第 ${ii + 1} 项名称不能为空`, icon: 'none' });
+        }
+        if (d !== '' && !this.isMoney(d)) {
+          return wx.showToast({ title: `第 ${gi + 1} 组第 ${ii + 1} 项加价必须是非负数字（最多两位小数）`, icon: 'none' });
+        }
+        items.push({ name: iName, priceDelta: d === '' ? 0 : Number(d) });
+      }
+      groups.push({ name: gName, items });
+    }
 
     const payload = {
       categoryId: form.categoryId,
@@ -200,13 +240,18 @@ Page({
       specGroups: groups,
     };
 
+    this.setData({ saving: true });
     const p = this.data.isEdit
       ? request({ url: `/admin/menu/${this.data.menuId}`, method: 'PUT', data: payload })
       : request({ url: '/admin/menu', method: 'POST', data: payload });
 
     p.then(() => {
+      this.setData({ saving: false });
       wx.showToast({ title: '保存成功', icon: 'success' });
       setTimeout(() => wx.navigateBack(), 600);
-    }).catch((err) => wx.showToast({ title: err.message, icon: 'none' }));
+    }).catch((err) => {
+      this.setData({ saving: false });
+      wx.showToast({ title: err.message, icon: 'none' });
+    });
   },
 });

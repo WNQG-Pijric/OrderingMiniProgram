@@ -2,6 +2,7 @@
 // 40101/20001（token 失效）→ 清登录态跳回管理员登录页。
 const { BASE_URL } = require('./config');
 const admin = require('./admin');
+const { cleanQuery, cleanBody } = require('./params');
 
 /**
  * @param {object} options
@@ -11,12 +12,16 @@ const admin = require('./admin');
  */
 function request(options) {
   return new Promise((resolve, reject) => {
+    const method = (options.method || 'GET').toUpperCase();
     wx.request({
       url: options.url.startsWith('http')
         ? options.url
         : `${BASE_URL}${options.url}`,
-      method: options.method || 'GET',
-      data: options.data,
+      method,
+      // GET/DELETE 走 query 清理；POST/PUT 走 body 清理（保留 null 语义）
+      data: method === 'GET' || method === 'DELETE'
+        ? cleanQuery(options.data)
+        : cleanBody(options.data),
       header: {
         'Content-Type': 'application/json',
         ...(admin.getAdminToken()

@@ -9,8 +9,9 @@ Page({
     total: 0,
     page: 1,
     hasMore: true,
-    status: '', // '' 全部 / 0 下架 / 1 上架
+    status: '', // '' 全部 / 0 下架 / 1 上架（数字，dataset 字符串转 Number）
     loading: false,
+    loadError: false, // 列表加载失败（与"暂无菜品"分开显示）
   },
 
   onShow() {
@@ -29,7 +30,9 @@ Page({
 
   /** 切换状态筛选 */
   onFilterTap(e) {
-    const status = e.currentTarget.dataset.status;
+    // dataset 静态属性是字符串，统一转数字（'' 全部保持空串）
+    const raw = e.currentTarget.dataset.status;
+    const status = raw === '' ? '' : Number(raw);
     if (status === this.data.status) return;
     this.setData({ status });
     this.reload();
@@ -39,10 +42,10 @@ Page({
     if (this.data.loading || (!reset && !this.data.hasMore)) return;
     this.setData({ loading: true });
     const { page, status } = this.data;
-    request({
-      url: '/admin/menu',
-      data: { page, pageSize: PAGE_SIZE, status: status || undefined },
-    })
+    // 空串不传 status（避免 undefined 被序列化成 "undefined" 导致后端校验失败）
+    const data = { page, pageSize: PAGE_SIZE };
+    if (status !== '') data.status = status;
+    request({ url: '/admin/menu', data })
       .then((data) => {
         const list = reset ? data.list : this.data.list.concat(data.list);
         this.setData({
@@ -52,11 +55,15 @@ Page({
           // 已加载条数 < 总数 → 还有下一页
           hasMore: list.length < data.total,
           loading: false,
+          loadError: false,
         });
       })
-      .catch((err) => {
-        this.setData({ loading: false });
-        wx.showToast({ title: err.message, icon: 'none' });
+      .catch(() => {
+        // 列表请求失败不弹 toast（快速切换筛选会连弹），空列表时显示错误态
+        this.setData({
+          loading: false,
+          loadError: this.data.list.length === 0,
+        });
       });
   },
 
@@ -66,7 +73,9 @@ Page({
 
   /** 上架 / 下架 */
   onToggleStatus(e) {
-    const { id, status } = e.currentTarget.dataset;
+    const { id } = e.currentTarget.dataset;
+    // dataset 类型不确定（静态字符串 / 插值数字），统一 Number 后比较
+    const status = Number(e.currentTarget.dataset.status);
     request({
       url: `/admin/menu/${id}`,
       method: 'PUT',

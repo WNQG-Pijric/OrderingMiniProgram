@@ -29,7 +29,8 @@
 
   <!-- 菜品列表 -->
   <view class="menu-list">
-    <view wx:if="{{loading}}" class="c-empty">加载中...</view>
+    <view wx:if="{{loadError}}" class="c-empty menu-error" bindtap="retryMenus">加载失败，点击重试</view>
+    <view wx:elif="{{loading}}" class="c-empty">加载中...</view>
     <view wx:elif="{{menus.length === 0}}" class="c-empty">暂无菜品</view>
     <view
       wx:for="{{menus}}"

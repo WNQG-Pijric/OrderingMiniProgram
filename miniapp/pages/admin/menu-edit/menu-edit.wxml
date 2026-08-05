@@ -65,5 +65,10 @@
     </view>
   </view>
 
-  <button class="c-btn c-btn--primary c-btn--block save-btn" bindtap="onSave">保存</button>
+  <button
+    class="c-btn c-btn--primary c-btn--block save-btn"
+    loading="{{saving}}"
+    disabled="{{saving}}"
+    bindtap="onSave"
+  >{{saving ? '保存中...' : '保存'}}</button>
 </view>
