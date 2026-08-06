@@ -10,7 +10,7 @@ async function main() {
   const password = await bcrypt.hash('admin123456', 10);
   await prisma.admin.upsert({
     where: { username: 'admin' },
-    update: {},
+    update: { password }, // 已存在也刷新密码，保证 seed 幂等、文档承诺的默认密码始终可用
     create: {
       username: 'admin',
       password,

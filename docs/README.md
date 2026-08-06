@@ -627,6 +627,8 @@ Prompt 4：生成 用户中心页面
 
 Apifox
 
+本地联调（小程序连本机后端 + 本地 MySQL，便于看报错）：见 `docs/local-dev.md`。
+
 ## 数据库
 
 Navicat Premium / DBeaver / Prisma Studio（开发期零配置）
