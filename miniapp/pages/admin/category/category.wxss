@@ -41,14 +41,28 @@
 .item__ops {
   display: flex;
   align-items: center;
+  flex-shrink: 0; /* 操作区不压缩，避免状态文字/按钮被挤出 */
 }
 .op-btn {
   margin-left: var(--space-xl);
   font-size: var(--font-size-body);
   color: var(--color-link);
+  flex-shrink: 0;
 }
 .op-btn--danger {
   color: var(--color-danger);
+}
+
+/* 上下架状态文字：小号标签，说明 switch 含义 */
+.status-label {
+  margin-right: var(--space-sm);
+  font-size: var(--font-size-tag);
+  color: var(--text-placeholder);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.status-label--on {
+  color: var(--color-success);
 }
 
 /* 弹层表单 */

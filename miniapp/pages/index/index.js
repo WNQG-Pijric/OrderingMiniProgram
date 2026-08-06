@@ -16,13 +16,20 @@ Page({
 
   onLoad() {
     this.ensureLogin();
+    this._skipFirstShow = true; // onLoad 紧随的首次 onShow 不重复加载
     this.loadCategories();
     this.loadMenus();
   },
 
-  // 从购物车/详情返回首页时刷新角标
+  // 每次回到首页都刷新：购物车角标 + 分类/菜单（管理端 CRUD 后返回即时生效）
   onShow() {
     this.refreshCartCount();
+    if (this._skipFirstShow) {
+      this._skipFirstShow = false;
+      return;
+    }
+    this.loadCategories();
+    this.loadMenus(this.data.activeCategoryId);
   },
 
   /** 购物车角标：总件数，超过 99 显示 99+ */

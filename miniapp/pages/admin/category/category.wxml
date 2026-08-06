@@ -13,6 +13,8 @@
         <text class="item__sort">排序 {{item.sort}}</text>
       </view>
       <view class="item__ops">
+        <!-- 状态文字：说明当前启停状态；switch 无自带文字，必须配文字说明 -->
+        <text class="status-label {{item.status === 1 ? 'status-label--on' : ''}}">{{item.status === 1 ? '已上架' : '已下架'}}</text>
         <!-- switch color 与主色 token 一致（组件属性不支持 CSS 变量） -->
         <switch
           checked="{{item.status === 1}}"
@@ -22,7 +24,7 @@
           bindchange="onToggleStatus"
         />
         <text class="op-btn" data-item="{{item}}" bindtap="onEdit">编辑</text>
-        <text class="op-btn op-btn--danger" data-id="{{item.id}}" data-name="{{item.name}}" bindtap="onDelete">删除</text>
+        <text class="op-btn op-btn--danger" data-id="{{item.id}}" data-name="{{item.name}}" data-status="{{item.status}}" bindtap="onDelete">删除</text>
       </view>
     </view>
   </view>

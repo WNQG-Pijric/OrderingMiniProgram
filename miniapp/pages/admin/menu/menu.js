@@ -98,9 +98,14 @@ Page({
     wx.navigateTo({ url: '/pages/admin/menu-edit/menu-edit' });
   },
 
-  /** 删除（软删除） */
+  /** 删除（软删除）：上架中不可删除，需先下架 */
   onDelete(e) {
-    const { id, name } = e.currentTarget.dataset;
+    const { id, name, status } = e.currentTarget.dataset;
+    // dataset 类型不确定（静态字符串 / 插值数字），统一 Number 后比较
+    if (Number(status) === 1) {
+      wx.showToast({ title: '请先下架再删除', icon: 'none' });
+      return;
+    }
     wx.showModal({
       title: '删除菜品',
       content: `确认删除「${name}」？删除后用户端不可见，历史订单不受影响。`,

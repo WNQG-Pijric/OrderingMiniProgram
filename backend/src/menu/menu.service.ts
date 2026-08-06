@@ -14,10 +14,11 @@ import { UpdateMenuDto } from './dto/update-menu.dto';
  * 菜单模块：分类 / 菜品 / 规格（组 / 项）。
  *
  * 可见性约定：
- * - 用户端只返回「上架（status=1）+ 未软删除 + 所属分类启用」的菜品。
+ * - 用户端只返回「上架（status=1）+ 未软删除 + 所属分类启用且未删除」的菜品。
  * - 菜品删除 = 软删除（deletedAt 落时间戳），下架 / 删除不影响历史订单快照。
- * - 分类无 deletedAt 字段（schema 固定），删除 = 置 status=0 停用（等效软删除，
- *   数据保留、历史可追溯），用户端分类列表与菜品列表均自动不可见。
+ * - 分类删除 = 软删除（deletedAt，与菜品一致）；下架用 status 表达（0停用 1启用），
+ *   两者语义分离。用户端分类列表与菜品列表均自动不可见。
+ * - 上架状态（菜品 status=1 / 分类 status=1）不可删除，需先下架。
  * - 菜品最终单价 = 基础价 + 所选规格项 price_delta 之和（下单模块服务端重算，
  *   本模块只负责数据维护与展示）。
  */
@@ -27,10 +28,10 @@ export class MenuService {
 
   // ==================== 用户端 ====================
 
-  /** 分类列表：只返回启用（status=1），按 sort 升序 */
+  /** 分类列表：只返回启用且未删除（status=1, deletedAt=null），按 sort 升序 */
   async listCategories() {
     const categories = await this.prisma.menuCategory.findMany({
-      where: { status: 1 },
+      where: { status: 1, deletedAt: null },
       orderBy: [{ sort: 'asc' }, { id: 'asc' }],
     });
     return categories.map((c) => ({
@@ -49,7 +50,7 @@ export class MenuService {
     const where: Prisma.MenuWhereInput = {
       status: 1,
       deletedAt: null,
-      category: { status: 1 },
+      category: { status: 1, deletedAt: null },
       ...(categoryId !== undefined ? { categoryId } : {}),
     };
     const menus = await this.prisma.menu.findMany({
@@ -60,10 +61,10 @@ export class MenuService {
     return menus.map((menu) => this.toMenuView(menu));
   }
 
-  /** 菜品详情（含规格）：不存在 / 已删除 / 已下架 / 分类停用 → 31002 */
+  /** 菜品详情（含规格）：不存在 / 已删除 / 已下架 / 分类停用或已删除 → 31002 */
   async getMenu(id: number) {
     const menu = await this.prisma.menu.findFirst({
-      where: { id, status: 1, deletedAt: null, category: { status: 1 } },
+      where: { id, status: 1, deletedAt: null, category: { status: 1, deletedAt: null } },
       include: this.specInclude(),
     });
     if (!menu) {
@@ -74,9 +75,10 @@ export class MenuService {
 
   // ==================== 管理端：分类 ====================
 
-  /** 管理端分类列表（含停用），按 sort 升序 */
+  /** 管理端分类列表（含停用，不含已删除），按 sort 升序 */
   async listAllCategories() {
     const categories = await this.prisma.menuCategory.findMany({
+      where: { deletedAt: null },
       orderBy: [{ sort: 'asc' }, { id: 'asc' }],
     });
     return categories.map((c) => ({
@@ -112,14 +114,23 @@ export class MenuService {
   }
 
   /**
-   * 删除分类：分类无 deletedAt 字段，置 status=0 停用（等效软删除）。
-   * 停用后用户端分类列表与菜品列表均不再展示该分类，历史数据保留可追溯。
+   * 删除分类：软删除（deletedAt），与菜品删除一致。
+   * 上架（status=1）不可删除，需先下架；删除后用户端分类及其下菜品不再展示，数据保留。
    */
   async deleteCategory(id: number) {
-    await this.assertCategoryExists(id);
+    const category = await this.prisma.menuCategory.findUnique({
+      where: { id },
+      select: { id: true, status: true, deletedAt: true },
+    });
+    if (!category || category.deletedAt) {
+      throw new BizException(ErrorCode.CATEGORY_NOT_FOUND);
+    }
+    if (category.status === 1) {
+      throw new BizException(ErrorCode.CATEGORY_ENABLED_CANNOT_DELETE);
+    }
     await this.prisma.menuCategory.update({
       where: { id },
-      data: { status: 0 },
+      data: { deletedAt: new Date() },
     });
     return { id };
   }
@@ -235,9 +246,21 @@ export class MenuService {
     return this.getAdminMenu(menu.id);
   }
 
-  /** 删除菜品：软删除（deletedAt），不影响历史订单快照 */
+  /**
+   * 删除菜品：软删除（deletedAt），不影响历史订单快照。
+   * 上架（status=1）不可删除，需先下架。
+   */
   async deleteMenu(id: number) {
-    await this.assertMenuExists(id);
+    const menu = await this.prisma.menu.findFirst({
+      where: { id, deletedAt: null },
+      select: { id: true, status: true },
+    });
+    if (!menu) {
+      throw new BizException(ErrorCode.MENU_NOT_FOUND);
+    }
+    if (menu.status === 1) {
+      throw new BizException(ErrorCode.MENU_ON_SHELF_CANNOT_DELETE);
+    }
     await this.prisma.menu.update({
       where: { id },
       data: { deletedAt: new Date() },
@@ -299,10 +322,10 @@ export class MenuService {
     };
   }
 
-  /** 分类存在校验（管理端操作共用）→ 不存在 31001 */
+  /** 分类存在校验（管理端操作共用，排除已删除）→ 不存在 31001 */
   private async assertCategoryExists(id: number) {
-    const category = await this.prisma.menuCategory.findUnique({
-      where: { id },
+    const category = await this.prisma.menuCategory.findFirst({
+      where: { id, deletedAt: null },
     });
     if (!category) {
       throw new BizException(ErrorCode.CATEGORY_NOT_FOUND);

@@ -81,7 +81,7 @@ Page({
     });
   },
 
-  /** 启停切换（停用 = 删除的等效表达，数据保留） */
+  /** 启停切换（上下架） */
   onToggleStatus(e) {
     const { id } = e.currentTarget.dataset;
     // dataset 类型不确定（静态字符串 / 插值数字），统一 Number 后比较
@@ -91,22 +91,30 @@ Page({
       method: 'PUT',
       data: { status: status === 1 ? 0 : 1 },
     })
-      .then(() => this.load())
+      .then(() => {
+        wx.showToast({ title: status === 1 ? '已下架' : '已上架', icon: 'success' });
+        this.load();
+      })
       .catch((err) => wx.showToast({ title: err.message, icon: 'none' }));
   },
 
-  /** 删除（置停用） */
+  /** 删除（软删除，类比菜品）：上架中不可删除，需先下架 */
   onDelete(e) {
-    const { id, name } = e.currentTarget.dataset;
+    const { id, name, status } = e.currentTarget.dataset;
+    // dataset 类型不确定（静态字符串 / 插值数字），统一 Number 后比较
+    if (Number(status) === 1) {
+      wx.showToast({ title: '请先下架再删除', icon: 'none' });
+      return;
+    }
     wx.showModal({
       title: '删除分类',
-      content: `确认停用分类「${name}」？停用后用户端不再展示，数据保留可恢复。`,
+      content: `确认删除分类「${name}」？删除后用户端不再展示该分类及其下菜品，数据保留。`,
       confirmColor: '#ff4d2e',
       success: (res) => {
         if (!res.confirm) return;
         request({ url: `/admin/category/${id}`, method: 'DELETE' })
           .then(() => {
-            wx.showToast({ title: '已停用', icon: 'success' });
+            wx.showToast({ title: '已删除', icon: 'success' });
             this.load();
           })
           .catch((err) => wx.showToast({ title: err.message, icon: 'none' }));

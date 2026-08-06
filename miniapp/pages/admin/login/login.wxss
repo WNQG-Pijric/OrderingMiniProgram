@@ -55,7 +55,9 @@
   box-sizing: border-box;
   border: 2rpx solid var(--border-strong);
   border-radius: var(--radius-md);
-  padding: var(--space-lg) var(--space-xl);
+  height: 88rpx; /* 固定高度，避免小程序 input 默认行高偏矮 */
+  line-height: 88rpx;
+  padding: 0 var(--space-xl);
   font-size: var(--font-size-body-lg);
   background-color: var(--bg-muted);
 }

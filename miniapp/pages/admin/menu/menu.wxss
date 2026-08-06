@@ -72,6 +72,10 @@
   font-size: var(--font-size-body-lg);
   font-weight: 500;
   color: var(--text-primary);
+  /* 名称列可收缩并省略，防止 ops 区加状态文字后挤压越界 */
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 .item__name--disabled {
   color: var(--text-placeholder);
@@ -89,6 +93,19 @@
   display: flex;
   align-items: center;
   margin-left: var(--space-sm);
+  flex-shrink: 0; /* 操作区不压缩，避免状态文字/按钮被挤出 */
+}
+
+/* 上下架状态文字：小号标签，说明 switch 含义 */
+.status-label {
+  margin-right: var(--space-sm);
+  font-size: var(--font-size-tag);
+  color: var(--text-placeholder);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.status-label--on {
+  color: var(--color-success);
 }
 .op-btn {
   margin-left: var(--space-lg);

@@ -338,6 +338,7 @@ sort
 status            0停用 1启用
 created_at
 updated_at
+deleted_at        软删除
 ```
 
 ## menu

@@ -11,6 +11,7 @@ describe('MenuService', () => {
     menuCategory: {
       findMany: jest.fn(),
       findUnique: jest.fn(),
+      findFirst: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
     },
@@ -124,7 +125,7 @@ describe('MenuService', () => {
       const result = await service.listCategories();
 
       expect(mockPrisma.menuCategory.findMany).toHaveBeenCalledWith({
-        where: { status: 1 },
+        where: { status: 1, deletedAt: null },
         orderBy: [{ sort: 'asc' }, { id: 'asc' }],
       });
       expect(result).toEqual([
@@ -152,7 +153,11 @@ describe('MenuService', () => {
 
       expect(mockPrisma.menu.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: { status: 1, deletedAt: null, category: { status: 1 } },
+          where: {
+            status: 1,
+            deletedAt: null,
+            category: { status: 1, deletedAt: null },
+          },
         }),
       );
       // 金额保留两位小数；含规格层级与 price_delta
@@ -173,7 +178,7 @@ describe('MenuService', () => {
           where: {
             status: 1,
             deletedAt: null,
-            category: { status: 1 },
+            category: { status: 1, deletedAt: null },
             categoryId: 1,
           },
         }),
@@ -209,7 +214,7 @@ describe('MenuService', () => {
         id: 1,
         status: 1,
         deletedAt: null,
-        category: { status: 1 },
+        category: { status: 1, deletedAt: null },
       });
       expect(findArg.include).toBeDefined();
       expect(result.name).toBe('珍珠奶茶');
@@ -245,7 +250,7 @@ describe('MenuService', () => {
     });
 
     it('updateCategory：分类不存在 → 31001（不落库）', async () => {
-      mockPrisma.menuCategory.findUnique.mockResolvedValue(null);
+      mockPrisma.menuCategory.findFirst.mockResolvedValue(null);
       await expect(
         service.updateCategory(999, { name: '新分类' }),
       ).rejects.toMatchObject({
@@ -255,7 +260,7 @@ describe('MenuService', () => {
     });
 
     it('updateCategory：逐字段更新（不覆盖未传字段）', async () => {
-      mockPrisma.menuCategory.findUnique.mockResolvedValue(buildCategory());
+      mockPrisma.menuCategory.findFirst.mockResolvedValue(buildCategory());
       mockPrisma.menuCategory.update.mockResolvedValue(buildCategory());
 
       await service.updateCategory(1, { name: '新奶茶' });
@@ -266,16 +271,36 @@ describe('MenuService', () => {
       });
     });
 
-    it('deleteCategory：置 status=0 停用（等效软删除，数据保留）', async () => {
+    it('deleteCategory：上架中（status=1）→ 31009，不落库', async () => {
       mockPrisma.menuCategory.findUnique.mockResolvedValue(buildCategory());
+      await expect(service.deleteCategory(1)).rejects.toMatchObject({
+        response: { code: ErrorCode.CATEGORY_ENABLED_CANNOT_DELETE },
+      });
+      expect(mockPrisma.menuCategory.update).not.toHaveBeenCalled();
+    });
+
+    it('deleteCategory：已删除（deletedAt 非空）→ 31001', async () => {
+      mockPrisma.menuCategory.findUnique.mockResolvedValue(
+        buildCategory({ status: 0, deletedAt: new Date() }),
+      );
+      await expect(service.deleteCategory(1)).rejects.toMatchObject({
+        response: { code: ErrorCode.CATEGORY_NOT_FOUND },
+      });
+      expect(mockPrisma.menuCategory.update).not.toHaveBeenCalled();
+    });
+
+    it('deleteCategory：下架后软删除（deletedAt 落时间戳，数据保留）', async () => {
+      mockPrisma.menuCategory.findUnique.mockResolvedValue(
+        buildCategory({ status: 0 }),
+      );
       mockPrisma.menuCategory.update.mockResolvedValue(buildCategory());
 
       await service.deleteCategory(1);
 
-      expect(mockPrisma.menuCategory.update).toHaveBeenCalledWith({
-        where: { id: 1 },
-        data: { status: 0 },
-      });
+      const updateArg = firstCallArg(mockPrisma.menuCategory.update) as {
+        data: { deletedAt?: unknown };
+      };
+      expect(updateArg.data.deletedAt).toBeInstanceOf(Date);
     });
   });
 
@@ -326,7 +351,7 @@ describe('MenuService', () => {
     });
 
     it('createMenu：分类不存在 → 31001（不创建）', async () => {
-      mockPrisma.menuCategory.findUnique.mockResolvedValue(null);
+      mockPrisma.menuCategory.findFirst.mockResolvedValue(null);
       await expect(
         service.createMenu({ categoryId: 999, name: 'x', price: 10 }),
       ).rejects.toMatchObject({
@@ -336,7 +361,7 @@ describe('MenuService', () => {
     });
 
     it('createMenu：同一事务内创建菜品 + 规格组 / 项，isSpec 自动推断', async () => {
-      mockPrisma.menuCategory.findUnique.mockResolvedValue(buildCategory());
+      mockPrisma.menuCategory.findFirst.mockResolvedValue(buildCategory());
       mockPrisma.menu.create.mockResolvedValue(buildMenu());
       mockPrisma.menuSpecGroup.create.mockResolvedValue(buildSpecGroup());
       mockPrisma.menuSpecItem.create.mockResolvedValue(buildSpecItem());
@@ -385,7 +410,7 @@ describe('MenuService', () => {
     });
 
     it('createMenu：无规格组 → isSpec=false', async () => {
-      mockPrisma.menuCategory.findUnique.mockResolvedValue(buildCategory());
+      mockPrisma.menuCategory.findFirst.mockResolvedValue(buildCategory());
       mockPrisma.menu.create.mockResolvedValue(buildMenu({ isSpec: false }));
       mockPrisma.menu.findFirst.mockResolvedValue(buildMenu({ isSpec: false }));
 
@@ -462,7 +487,7 @@ describe('MenuService', () => {
 
     it('updateMenu：分类变更时校验新分类存在', async () => {
       mockPrisma.menu.findFirst.mockResolvedValue(buildMenu());
-      mockPrisma.menuCategory.findUnique.mockResolvedValue(null);
+      mockPrisma.menuCategory.findFirst.mockResolvedValue(null);
 
       await expect(
         service.updateMenu(1, { categoryId: 999 }),
@@ -472,10 +497,18 @@ describe('MenuService', () => {
       expect(mockPrisma.menu.update).not.toHaveBeenCalled();
     });
 
-    it('deleteMenu：软删除（deletedAt 落时间戳，不物理删除）', async () => {
+    it('deleteMenu：上架中（status=1）→ 31008，不落库', async () => {
       mockPrisma.menu.findFirst.mockResolvedValue(buildMenu());
+      await expect(service.deleteMenu(1)).rejects.toMatchObject({
+        response: { code: ErrorCode.MENU_ON_SHELF_CANNOT_DELETE },
+      });
+      expect(mockPrisma.menu.update).not.toHaveBeenCalled();
+    });
+
+    it('deleteMenu：下架后软删除（deletedAt 落时间戳，不物理删除）', async () => {
+      mockPrisma.menu.findFirst.mockResolvedValue(buildMenu({ status: 0 }));
       mockPrisma.menu.update.mockResolvedValue(
-        buildMenu({ deletedAt: new Date() }),
+        buildMenu({ status: 0, deletedAt: new Date() }),
       );
 
       await service.deleteMenu(1);

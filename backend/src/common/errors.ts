@@ -46,6 +46,10 @@ export const ErrorCode = {
   CONVERSATION_FORBIDDEN: 31006,
   /** 消息内容不合法 */
   INVALID_MESSAGE: 31007,
+  /** 菜品上架中：删除前需先下架 */
+  MENU_ON_SHELF_CANNOT_DELETE: 31008,
+  /** 分类上架中：删除前需先下架 */
+  CATEGORY_ENABLED_CANNOT_DELETE: 31009,
 
   // ===== 订单 / 钱包（4xxxx） =====
   /** 余额不足：扣款失败，不做部分扣款 */
@@ -97,6 +101,8 @@ export const ErrorMessage: Record<ErrorCodeValue, string> = {
   [ErrorCode.CONVERSATION_NOT_FOUND]: '会话不存在',
   [ErrorCode.CONVERSATION_FORBIDDEN]: '无权访问该会话',
   [ErrorCode.INVALID_MESSAGE]: '消息内容不合法',
+  [ErrorCode.MENU_ON_SHELF_CANNOT_DELETE]: '菜品上架中，请先下架再删除',
+  [ErrorCode.CATEGORY_ENABLED_CANNOT_DELETE]: '分类上架中，请先下架再删除',
 
   [ErrorCode.INSUFFICIENT_BALANCE]: '余额不足',
   [ErrorCode.INSUFFICIENT_STOCK]: '库存不足',
